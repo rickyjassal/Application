@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="100" fill="url(#grad)"/>
+  
+  <!-- Briefcase icon -->
+  <g transform="translate(50, 60)">
+    <!-- Main case body -->
+    <rect x="10" y="15" width="80" height="55" rx="4" fill="white" stroke="white" stroke-width="2"/>
+    <!-- Handle -->
+    <path d="M 30 15 Q 50 5 70 15" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/>
+    <!-- Divider line -->
+    <line x1="50" y1="15" x2="50" y2="70" stroke="white" stroke-width="2"/>
+    <!-- Lock/button -->
+    <circle cx="50" cy="12" r="3" fill="white"/>
+  </g>
+  
+  <!-- Text below -->
+  <text x="100" y="180" font-size="18" font-weight="bold" text-anchor="middle" fill="white">BMS</text>
+</svg>

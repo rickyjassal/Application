@@ -1,0 +1,133 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Branding - Admin{% endblock %}
+
+{% block extra_styles %}
+    .settings-grid { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; color: #5b6773; }
+    .field input, .field textarea { width: 100%; border: 1px solid #dce2e8; border-radius: 6px; padding: 10px 12px; font: inherit; }
+    .field textarea { min-height: 90px; resize: vertical; }
+    .actions { display: flex; justify-content: flex-end; margin-top: 18px; }
+    .hint { color: #6b7280; font-size: 13px; margin-top: 6px; }
+    .brand-preview { border: 1px solid #eceff3; border-radius: 8px; overflow: hidden; }
+    .brand-preview-header { background: linear-gradient(135deg, {{ branding.brand_primary_color }} 0%, {{ branding.brand_secondary_color }} 100%); color: white; display: flex; align-items: center; gap: 12px; padding: 18px; }
+    .brand-preview-logo { width: 52px; height: 52px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .brand-preview-logo img { width: 86%; height: 86%; object-fit: contain; }
+    .brand-preview-body { padding: 18px; }
+    .inline-grid { display: grid; gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+{% endblock %}
+
+{% block content %}
+    <div class="section">
+        <h2>Branding</h2>
+        <p class="hint">Update the live application branding for future quotes and invoices. Existing documents keep the branding snapshot they were created with.</p>
+    </div>
+
+    <form class="section" id="settings-form" enctype="multipart/form-data">
+        <div class="settings-grid">
+            <div>
+                <div class="field">
+                    <label for="business_name">Business Name</label>
+                    <input id="business_name" name="business_name" value="{{ settings.business_name }}">
+                </div>
+                <div class="field">
+                    <label for="business_legal_name">Legal Name</label>
+                    <input id="business_legal_name" name="business_legal_name" value="{{ settings.business_legal_name }}">
+                </div>
+                <div class="field">
+                    <label for="business_address">Business Address</label>
+                    <textarea id="business_address" name="business_address">{{ settings.business_address }}</textarea>
+                </div>
+                <div class="field">
+                    <label for="business_abn">ABN</label>
+                    <input id="business_abn" name="business_abn" value="{{ settings.business_abn }}">
+                </div>
+                <div class="field">
+                    <label for="business_contact_email">Contact Email</label>
+                    <input id="business_contact_email" name="business_contact_email" value="{{ settings.business_contact_email }}">
+                </div>
+                <div class="inline-grid">
+                    <div class="field">
+                        <label for="brand_primary_color">Primary Colour</label>
+                        <input id="brand_primary_color" name="brand_primary_color" type="color" value="{{ branding.brand_primary_color }}">
+                    </div>
+                    <div class="field">
+                        <label for="brand_secondary_color">Secondary Colour</label>
+                        <input id="brand_secondary_color" name="brand_secondary_color" type="color" value="{{ branding.brand_secondary_color }}">
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="brand_logo">Logo Upload</label>
+                    <input id="brand_logo" name="brand_logo" type="file" accept=".png,.jpg,.jpeg,.webp,.svg">
+                    <div class="hint">Upload a new logo for future documents and the admin header. Existing quotes and invoices will keep their original branding snapshot.</div>
+                </div>
+            </div>
+            <div>
+                <div class="field">
+                    <label for="bank_name">Bank Name</label>
+                    <input id="bank_name" name="bank_name" value="{{ settings.bank_name }}">
+                </div>
+                <div class="field">
+                    <label for="bank_account_name">Account Name</label>
+                    <input id="bank_account_name" name="bank_account_name" value="{{ settings.bank_account_name }}">
+                </div>
+                <div class="field">
+                    <label for="bank_bsb">BSB</label>
+                    <input id="bank_bsb" name="bank_bsb" value="{{ settings.bank_bsb }}">
+                </div>
+                <div class="field">
+                    <label for="bank_account_number">Account Number</label>
+                    <input id="bank_account_number" name="bank_account_number" value="{{ settings.bank_account_number }}">
+                </div>
+                <div class="field">
+                    <label for="invoice_due_days">Default Invoice Due Days</label>
+                    <input id="invoice_due_days" name="invoice_due_days" type="number" min="1" value="{{ settings.invoice_due_days }}">
+                </div>
+                <div class="field">
+                    <label for="quote_expiry_days">Default Quote Expiry Days</label>
+                    <input id="quote_expiry_days" name="quote_expiry_days" type="number" min="1" value="{{ settings.quote_expiry_days }}">
+                </div>
+                <div class="brand-preview">
+                    <div class="brand-preview-header">
+                        <div class="brand-preview-logo">
+                            <img src="{{ url_for('static', filename=branding.brand_logo_path) }}" alt="{{ branding.business_name }}">
+                        </div>
+                        <div>
+                            <div style="font-size: 18px; font-weight: 700;">{{ branding.business_name }}</div>
+                            <div style="font-size: 13px; opacity: 0.92;">Document and application preview</div>
+                        </div>
+                    </div>
+                    <div class="brand-preview-body">
+                        <div><strong>{{ settings.business_legal_name }}</strong></div>
+                        <div>{{ settings.business_address }}</div>
+                        <div>ABN: {{ settings.business_abn }}</div>
+                        <div>{{ settings.business_contact_email }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="actions">
+            <button type="submit" class="btn-primary">Save Branding</button>
+        </div>
+    </form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('settings-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const payload = new FormData(form);
+    const response = await fetch('{{ url_for("admin.settings") }}', {
+        method: 'POST',
+        body: payload,
+    });
+    const result = await response.json();
+    alert(result.message || (result.success ? 'Branding saved.' : 'Unable to save branding.'));
+    if (result.success) {
+        window.location.reload();
+    }
+});
+</script>
+{% endblock %}

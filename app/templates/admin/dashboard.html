@@ -1,0 +1,381 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}VentureFlow Pro Dashboard{% endblock %}
+
+{% block extra_styles %}
+    .header-tool { position: relative; }
+    .search-input { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 12px; border-radius: 4px; width: 250px; font-size: 13px; }
+    .search-input::placeholder { color: rgba(255,255,255,0.6); }
+    .notification-bell { background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 16px; position: relative; }
+    .notification-badge { position: absolute; top: -8px; right: -8px; background: #fbbf24; color: #333; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+    .search-results, .notification-panel { background: white; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.16); color: #22303c; display: none; position: absolute; right: 0; top: calc(100% + 10px); z-index: 50; }
+    .search-results { min-width: 340px; overflow: hidden; width: 340px; }
+    .search-results.open, .notification-panel.open { display: block; }
+    .search-empty, .search-loading { color: #6b7280; font-size: 13px; padding: 14px 16px; }
+    .search-result { border-bottom: 1px solid #eef2f5; color: inherit; display: block; padding: 12px 16px; text-decoration: none; }
+    .search-result:last-child { border-bottom: 0; }
+    .search-result:hover { background: #f8fafc; }
+    .search-result-type { color: var(--brand-primary); font-size: 11px; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; }
+    .search-result-title { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+    .search-result-subtitle { color: #64748b; font-size: 12px; }
+    .notification-panel { max-height: 420px; overflow-y: auto; width: 380px; }
+    .notification-header { align-items: center; border-bottom: 1px solid #eef2f5; display: flex; justify-content: space-between; padding: 14px 16px; }
+    .notification-header h3 { font-size: 15px; margin: 0; }
+    .notification-header-actions { align-items: center; display: flex; gap: 12px; }
+    .notification-list { padding: 8px 0; }
+    .notification-section-title { color: #64748b; font-size: 11px; font-weight: 700; padding: 8px 16px 4px; text-transform: uppercase; }
+    .notification-item { border-bottom: 1px solid #eef2f5; display: flex; gap: 12px; justify-content: space-between; padding: 12px 16px; }
+    .notification-item:last-child { border-bottom: 0; }
+    .notification-item:hover { background: #f8fafc; }
+    .notification-item.unread { background: color-mix(in srgb, var(--brand-primary) 10%, white); }
+    .notification-item-main { color: inherit; display: block; flex: 1; min-width: 0; text-decoration: none; }
+    .notification-item-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .notification-item-detail { color: #64748b; font-size: 12px; line-height: 1.4; }
+    .notification-status { align-items: flex-end; display: flex; flex-direction: column; gap: 8px; }
+    .notification-state { border-radius: 999px; font-size: 10px; font-weight: 700; letter-spacing: 0.4px; padding: 4px 8px; text-transform: uppercase; }
+    .notification-state.unread { background: var(--brand-primary); color: white; }
+    .notification-state.read { background: #e5e7eb; color: #475569; }
+    .notification-toggle { background: none; border: none; color: var(--brand-primary); cursor: pointer; font-size: 12px; font-weight: 600; padding: 0; }
+    .notification-empty { color: #6b7280; font-size: 13px; padding: 16px; }
+    .intro { background: white; padding: 28px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 30px; }
+    .intro h2 { color: #222; margin-bottom: 10px; }
+    .intro p { color: #555; line-height: 1.6; }
+    .intro-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin-bottom: 30px; }
+    .stat-card { background: white; padding: 22px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); border-top: 4px solid var(--brand-primary); text-align: center; }
+    .stat-number { font-size: 32px; color: var(--brand-primary); font-weight: 700; margin-bottom: 8px; }
+    .stat-label { font-size: 12px; color: #777; letter-spacing: 0.8px; text-transform: uppercase; }
+    .widget-grid { display: grid; gap: 18px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 30px; }
+    .widget-card { background: white; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); padding: 22px; }
+    .widget-card h3 { color: #222; font-size: 16px; margin-bottom: 12px; }
+    .widget-card p { color: #56616d; font-size: 14px; line-height: 1.5; margin-bottom: 10px; }
+    .widget-list { color: #56616d; font-size: 14px; }
+    .widget-list div { border-bottom: 1px solid #f0f2f5; padding: 8px 0; }
+    .widget-list div:last-child { border-bottom: 0; }
+    .widget-total { color: var(--brand-primary); font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+    .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 15px; flex-wrap: wrap; }
+    @media (max-width: 992px) { .stats-grid, .widget-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .search-input { width: 180px; } }
+    @media (max-width: 640px) { .stats-grid, .widget-grid { grid-template-columns: 1fr; } .intro, .section { padding: 18px; } .search-input { width: 140px; font-size: 11px; } .search-results, .notification-panel { left: 0; right: auto; width: min(92vw, 340px); } }
+{% endblock %}
+
+{% block header_actions %}
+    <div class="header-tool">
+        <input type="text" class="search-input" placeholder="Search customers, invoices, quotes..." id="search-input" autocomplete="off" oninput="searchDash(this.value)" onfocus="searchDash(this.value)">
+        <div class="search-results" id="search-results">
+            <div class="search-empty">Start typing to search the system.</div>
+        </div>
+    </div>
+    <div class="header-tool">
+        <button class="notification-bell" id="notification-bell" title="Notifications" onclick="toggleNotifications()">&#128276;<span class="notification-badge" id="notif-badge" {% if not unread_notifications %}style="display:none;"{% endif %}>{{ unread_notifications }}</span></button>
+        <div class="notification-panel" id="notification-panel">
+            <div class="notification-header">
+                <h3>Notifications</h3>
+                <div class="notification-header-actions">
+                    <button type="button" class="notification-toggle" onclick="markAllNotificationsRead()">Mark all read</button>
+                    <a href="{{ url_for('admin.invoices') }}" class="link" style="font-size: 12px;">Open Invoices</a>
+                </div>
+            </div>
+            <div class="notification-list">
+                {% if notifications %}
+                    {% for group, items in notifications|groupby('group') %}
+                    <div class="notification-section-title">{{ group }}</div>
+                    {% for item in items %}
+                    <div class="notification-item {% if not item.is_read %}unread{% endif %}" data-notification-key="{{ item.key }}">
+                        <a class="notification-item-main" href="{{ item.url }}">
+                            <div class="notification-item-title">{{ item.title }}</div>
+                            <div class="notification-item-detail">{{ item.detail }}</div>
+                        </a>
+                        <div class="notification-status">
+                            <span class="notification-state {% if item.is_read %}read{% else %}unread{% endif %}" data-role="state-label">{% if item.is_read %}Read{% else %}Unread{% endif %}</span>
+                            <button type="button" class="notification-toggle" onclick="toggleNotificationRead(event, '{{ item.key }}', {{ 'true' if item.is_read else 'false' }})" data-role="toggle-button">{% if item.is_read %}Mark unread{% else %}Mark read{% endif %}</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endfor %}
+                {% else %}
+                    <div class="notification-empty">No notifications right now.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="intro">
+        <h2>Welcome, {{ username }}</h2>
+        <p>Manage products, customers, quotes, invoices, reminders, and reporting from one smooth control panel.</p>
+        <div class="intro-actions">
+            <a href="{{ url_for('admin.create_quote') }}" class="btn-primary">Create Quote</a>
+            <a href="{{ url_for('admin.create_invoice') }}" class="btn-primary">Create Invoice</a>
+            <button type="button" class="btn-primary" onclick="runReminders()">Send Due Reminders</button>
+        </div>
+    </div>
+    <div class="stats-grid">
+        <div class="stat-card"><div class="stat-number">{{ stats.total_products or 0 }}</div><div class="stat-label">Total Products</div></div>
+        <div class="stat-card"><div class="stat-number">{{ stats.total_customers or 0 }}</div><div class="stat-label">Total Customers</div></div>
+        <div class="stat-card"><div class="stat-number">{{ stats.total_invoices or 0 }}</div><div class="stat-label">Total Invoices</div></div>
+        <div class="stat-card"><div class="stat-number">{{ stats.total_quotes or 0 }}</div><div class="stat-label">Total Quotes</div></div>
+        <div class="stat-card"><div class="stat-number">${{ '%.2f'|format(stats.outstanding_balance or 0) }}</div><div class="stat-label">Outstanding Value</div></div>
+        <div class="stat-card"><div class="stat-number">${{ '%.2f'|format(stats.overdue_balance or 0) }}</div><div class="stat-label">Overdue Value</div></div>
+        <div class="stat-card"><div class="stat-number">${{ '%.2f'|format(stats.gst_due or 0) }}</div><div class="stat-label">Current Month GST Due</div></div>
+        <div class="stat-card"><div class="stat-number">{{ stats.low_stock_count or 0 }}</div><div class="stat-label">Low Stock Items</div></div>
+    </div>
+    <div class="widget-grid">
+        <div class="widget-card">
+            <h3>Overdue Reminders</h3>
+            <div class="widget-total">{{ stats.reminders_due or 0 }}</div>
+            <p>Invoices currently due for an automatic reminder email.</p>
+            <div class="widget-list">
+                {% if reminder_candidates %}
+                    {% for invoice in reminder_candidates[:4] %}
+                    <div>{{ invoice.invoice_number }} - {{ invoice.customer.name if invoice.customer else 'Unknown' }}</div>
+                    {% endfor %}
+                {% else %}
+                    <div>No reminders are waiting right now.</div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="widget-card">
+            <h3>Low Stock Watch</h3>
+            <div class="widget-total">{{ stats.low_stock_count or 0 }}</div>
+            <p>Products at or below reorder level.</p>
+            <div class="widget-list">
+                {% if low_stock_items %}
+                    {% for product in low_stock_items[:4] %}
+                    <div>{{ product.name }} - {{ product.quantity_in_stock }} left</div>
+                    {% endfor %}
+                {% else %}
+                    <div>No low stock alerts.</div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="widget-card">
+            <h3>Overdue Collection</h3>
+            <div class="widget-total">{{ stats.overdue_invoices or 0 }}</div>
+            <p>Open overdue invoices needing collection follow-up.</p>
+            <div class="widget-list">
+                {% if overdue_invoices %}
+                    {% for invoice in overdue_invoices[:4] %}
+                    <div>{{ invoice.invoice_number }} - ${{ '%.2f'|format(invoice.get_balance_due() or 0) }}</div>
+                    {% endfor %}
+                {% else %}
+                    <div>No overdue invoices right now.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="section">
+        <h2>Recent Invoices</h2>
+        {% if invoices %}
+        <table>
+            <thead><tr><th>Invoice #</th><th>Customer</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody>
+                {% for invoice in invoices[:5] %}
+                <tr>
+                    <td><a class="link" href="{{ url_for('admin.view_invoice', invoice_id=invoice.id) }}">{{ invoice.invoice_number }}</a></td>
+                    <td>{{ invoice.customer.name if invoice.customer else 'N/A' }}</td>
+                    <td>${{ "%.2f"|format(invoice.total_amount) }}</td>
+                    <td>
+                        {% if invoice.status == 'PAID' %}<span class="badge badge-success">{{ invoice.status }}</span>
+                        {% elif invoice.status == 'PARTIAL' %}<span class="badge badge-warning">{{ invoice.status }}</span>
+                        {% elif invoice.status == 'OVERDUE' %}<span class="badge badge-danger">{{ invoice.status }}</span>
+                        {% else %}<span class="badge badge-info">{{ invoice.status }}</span>{% endif %}
+                    </td>
+                    <td>{{ invoice.invoice_date.strftime('%d-%m-%Y') if invoice.invoice_date else 'N/A' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if invoices|length > 5 %}
+        <div class="pagination">
+            <span style="font-size: 12px; color: #999;">Showing 5 of {{ invoices|length }} invoices</span>
+            <a href="{{ url_for('admin.invoices') }}" class="link" style="margin-left: 15px; font-weight: 600;">View All &rarr;</a>
+        </div>
+        {% endif %}
+        {% else %}
+        <p>No invoices found.</p>
+        {% endif %}
+    </div>
+    <div class="section">
+        <h2>Recent Quotes</h2>
+        {% if quotes %}
+        <table>
+            <thead><tr><th>Quote #</th><th>Customer</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody>
+                {% for quote in quotes[:5] %}
+                <tr>
+                    <td><a class="link" href="{{ url_for('admin.view_quote', quote_id=quote.id) }}">{{ quote.quote_number }}</a></td>
+                    <td>{{ quote.customer.name if quote.customer else 'N/A' }}</td>
+                    <td>
+                        {% if quote.status == 'ACCEPTED' %}<span class="badge badge-success">{{ quote.status }}</span>
+                        {% elif quote.status == 'REJECTED' %}<span class="badge badge-danger">{{ quote.status }}</span>
+                        {% elif quote.status == 'SENT' %}<span class="badge badge-info">{{ quote.status }}</span>
+                        {% else %}<span class="badge badge-warning">{{ quote.status }}</span>{% endif %}
+                    </td>
+                    <td>{{ quote.quote_date.strftime('%d-%m-%Y') if quote.quote_date else 'N/A' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if quotes|length > 5 %}
+        <div class="pagination">
+            <span style="font-size: 12px; color: #999;">Showing 5 of {{ quotes|length }} quotes</span>
+            <a href="{{ url_for('admin.quotes') }}" class="link" style="margin-left: 15px; font-weight: 600;">View All &rarr;</a>
+        </div>
+        {% endif %}
+        {% else %}
+        <p>No quotes found.</p>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let searchTimer = null;
+
+    async function searchDash(query) {
+        const resultsBox = document.getElementById('search-results');
+        const trimmed = (query || '').trim();
+
+        if (!trimmed) {
+            resultsBox.classList.remove('open');
+            resultsBox.innerHTML = '<div class="search-empty">Start typing to search the system.</div>';
+            return;
+        }
+
+        resultsBox.classList.add('open');
+        resultsBox.innerHTML = '<div class="search-loading">Searching...</div>';
+
+        if (searchTimer) {
+            clearTimeout(searchTimer);
+        }
+
+        searchTimer = setTimeout(async () => {
+            try {
+                const response = await fetch(`/admin/search?q=${encodeURIComponent(trimmed)}`);
+                const payload = await response.json();
+                const results = payload.results || [];
+
+                if (!results.length) {
+                    resultsBox.innerHTML = '<div class="search-empty">No matching results found.</div>';
+                    return;
+                }
+
+                resultsBox.innerHTML = results.map(result => `
+                    <a class="search-result" href="${result.url}">
+                        <div class="search-result-type">${result.type}</div>
+                        <div class="search-result-title">${escapeHtml(result.title || '')}</div>
+                        <div class="search-result-subtitle">${escapeHtml(result.subtitle || '')}</div>
+                    </a>
+                `).join('');
+            } catch (error) {
+                resultsBox.innerHTML = '<div class="search-empty">Search is unavailable right now.</div>';
+            }
+        }, 180);
+    }
+
+    async function runReminders() {
+        const response = await fetch('{{ url_for("admin.run_reminders") }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        });
+        const result = await response.json();
+        alert(result.message || (result.success ? 'Reminders processed.' : 'Unable to run reminders.'));
+        if (result.success) {
+            window.location.reload();
+        }
+    }
+
+    function toggleNotifications() {
+        const panel = document.getElementById('notification-panel');
+        panel.classList.toggle('open');
+    }
+
+    async function toggleNotificationRead(event, key, isCurrentlyRead) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const response = await fetch('{{ url_for("admin.mark_notification_read") }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ key, is_read: !isCurrentlyRead })
+        });
+        const result = await response.json();
+        if (!result.success) {
+            alert(result.message || 'Unable to update notification.');
+            return;
+        }
+
+        const item = document.querySelector(`[data-notification-key="${CSS.escape(key)}"]`);
+        if (!item) return;
+        const stateLabel = item.querySelector('[data-role="state-label"]');
+        const toggleButton = item.querySelector('[data-role="toggle-button"]');
+        const nowRead = !isCurrentlyRead;
+
+        item.classList.toggle('unread', !nowRead);
+        stateLabel.textContent = nowRead ? 'Read' : 'Unread';
+        stateLabel.className = `notification-state ${nowRead ? 'read' : 'unread'}`;
+        toggleButton.textContent = nowRead ? 'Mark unread' : 'Mark read';
+        toggleButton.setAttribute('onclick', `toggleNotificationRead(event, '${key}', ${nowRead ? 'true' : 'false'})`);
+        refreshNotificationBadge();
+    }
+
+    async function markAllNotificationsRead() {
+        const response = await fetch('{{ url_for("admin.mark_notifications_read_all") }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        });
+        const result = await response.json();
+        if (!result.success) {
+            alert(result.message || 'Unable to update notifications.');
+            return;
+        }
+
+        document.querySelectorAll('.notification-item').forEach(item => {
+            item.classList.remove('unread');
+            const stateLabel = item.querySelector('[data-role="state-label"]');
+            const toggleButton = item.querySelector('[data-role="toggle-button"]');
+            if (stateLabel) {
+                stateLabel.textContent = 'Read';
+                stateLabel.className = 'notification-state read';
+            }
+            if (toggleButton) {
+                const key = item.dataset.notificationKey;
+                toggleButton.textContent = 'Mark unread';
+                toggleButton.setAttribute('onclick', `toggleNotificationRead(event, '${key}', true)`);
+            }
+        });
+        refreshNotificationBadge();
+    }
+
+    function refreshNotificationBadge() {
+        const unread = document.querySelectorAll('.notification-item.unread').length;
+        const badge = document.getElementById('notif-badge');
+        badge.textContent = unread;
+        badge.style.display = unread ? 'flex' : 'none';
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    document.addEventListener('click', (event) => {
+        const searchTool = document.getElementById('search-input')?.closest('.header-tool');
+        const searchResults = document.getElementById('search-results');
+        if (searchTool && searchResults && !searchTool.contains(event.target)) {
+            searchResults.classList.remove('open');
+        }
+
+        const bellTool = document.getElementById('notification-bell')?.closest('.header-tool');
+        const notificationPanel = document.getElementById('notification-panel');
+        if (bellTool && notificationPanel && !bellTool.contains(event.target)) {
+            notificationPanel.classList.remove('open');
+        }
+    });
+</script>
+{% endblock %}

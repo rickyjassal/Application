@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}VentureFlow Pro - Business Management & Finance{% endblock %}</title>
+    {% block extra_head %}{% endblock %}
+    <style>
+        :root {
+            --brand-primary: {{ branding_settings.brand_primary_color }};
+            --brand-secondary: {{ branding_settings.brand_secondary_color }};
+            --brand-soft: color-mix(in srgb, {{ branding_settings.brand_primary_color }} 10%, white);
+            --brand-soft-border: color-mix(in srgb, {{ branding_settings.brand_primary_color }} 22%, white);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; color: #333; display: flex; flex-direction: column; }
+        .header { background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%); color: white; padding: 18px 28px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
+        .header-left { display: flex; align-items: center; gap: 14px; }
+        .header h1 { font-size: 22px; margin: 0; line-height: 1.2; }
+        .header-logo { width: 45px; height: 45px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+        .header-logo img { width: 90%; height: 90%; object-fit: contain; display: block; }
+        .header-right { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .logout-btn { background: rgba(255,255,255,0.2); color: white; border: 1px solid white; padding: 8px 16px; border-radius: 4px; text-decoration: none; }
+        .logout-btn:hover { background: rgba(255,255,255,0.3); }
+        .app-shell { display: flex; flex: 1; min-height: 0; }
+        .sidebar { width: 230px; background: white; border-right: 1px solid #ddd; padding: 20px; overflow-y: auto; }
+        .sidebar-section { margin-bottom: 24px; }
+        .sidebar-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #fff; background: var(--brand-primary); padding: 10px 14px; border-radius: 4px; }
+        .nav-link { display: block; padding: 10px 14px; color: #333; text-decoration: none; margin-top: 6px; border-radius: 4px; transition: all 0.2s ease; }
+        .nav-link:hover { background: var(--brand-soft); color: var(--brand-primary); }
+        .nav-link.active { background: var(--brand-soft); color: var(--brand-primary); font-weight: 600; }
+        .page-content { flex: 1; padding: 30px; overflow-y: auto; }
+        .section { background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 26px; }
+        .section h2 { font-size: 18px; margin-bottom: 18px; color: #222; }
+        table { width: 100%; border-collapse: collapse; }
+        table th, table td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #eee; }
+        table th { background: #fafafa; color: #444; font-size: 12px; text-transform: uppercase; letter-spacing: 0.7px; }
+        tr:hover { background: #fafafa; }
+        .btn-primary, .btn { background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; }
+        .btn:hover, .btn-primary:hover { opacity: 0.92; }
+        .btn-secondary { background: #ecf0f1; color: #2c3e50; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: 600; }
+        .btn-secondary:hover { background: #d5dbdb; }
+        .link { color: var(--brand-primary); text-decoration: none; }
+        .link:hover { text-decoration: underline; }
+        .badge { display: inline-block; padding: 5px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+        .badge-success { background: #d4edda; color: #155724; }
+        .badge-warning { background: #fff3cd; color: #856404; }
+        .badge-danger { background: #f8d7da; color: #721c24; }
+        .badge-info { background: #d1ecf1; color: #0c5460; }
+        .alert { background: var(--brand-soft); border-left: 4px solid var(--brand-primary); padding: 15px 16px; margin-bottom: 20px; border-radius: 5px; }
+        .alert-title { font-weight: 700; color: #8a2a2e; margin-bottom: 6px; }
+        footer { background: #f8f9fa; border-top: 1px solid #dee2e6; padding: 15px 28px; text-align: center; color: #7f8c8d; font-size: 12px; line-height: 1.6; flex-shrink: 0; }
+        footer p { margin: 4px 0; }
+        footer a { color: var(--brand-primary); text-decoration: none; font-weight: 600; }
+        footer a:hover { text-decoration: underline; }
+        @media (max-width: 992px) { .app-shell { flex-direction: column; } .sidebar { width: 100%; height: auto; } }
+        {% block extra_styles %}{% endblock %}
+    </style>
+</head>
+<body>
+    {% set endpoint = request.endpoint or '' %}
+    <header class="header">
+        <div class="header-left">
+            <div class="header-logo">
+                <img src="{{ url_for('static', filename=branding_settings.brand_logo_path) }}" alt="{{ branding_settings.business_name }}">
+            </div>
+            <h1>{{ branding_settings.business_name }} - Business Management & Finance</h1>
+        </div>
+        <div class="header-right">
+            {% block header_actions %}{% endblock %}
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn">Logout</a>
+        </div>
+    </header>
+
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Menu</div>
+                <a class="nav-link {% if endpoint == 'admin.dashboard' %}active{% endif %}" href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+                <a class="nav-link {% if endpoint == 'admin.settings' %}active{% endif %}" href="{{ url_for('admin.settings') }}">Branding</a>
+                <a class="nav-link {% if endpoint == 'admin.activity' %}active{% endif %}" href="{{ url_for('admin.activity') }}">Activity</a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-title">Management</div>
+                <a class="nav-link {% if endpoint == 'admin.products' %}active{% endif %}" href="{{ url_for('admin.products') }}">Products</a>
+                <a class="nav-link {% if endpoint == 'admin.inventory' %}active{% endif %}" href="{{ url_for('admin.inventory') }}">Inventory</a>
+                <a class="nav-link {% if endpoint == 'admin.services' %}active{% endif %}" href="{{ url_for('admin.services') }}">Services</a>
+                <a class="nav-link {% if endpoint == 'admin.customers' %}active{% endif %}" href="{{ url_for('admin.customers') }}">Customers</a>
+                <a class="nav-link {% if endpoint == 'admin.suppliers' %}active{% endif %}" href="{{ url_for('admin.suppliers') }}">Suppliers</a>
+                <a class="nav-link {% if endpoint == 'admin.purchases' %}active{% endif %}" href="{{ url_for('admin.purchases') }}">Purchases</a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-title">Sales &amp; Billing</div>
+                <a class="nav-link {% if endpoint == 'admin.quotes' %}active{% endif %}" href="{{ url_for('admin.quotes') }}">Quotes</a>
+                <a class="nav-link {% if endpoint == 'admin.invoices' %}active{% endif %}" href="{{ url_for('admin.invoices') }}">Invoices</a>
+                <a class="nav-link {% if endpoint == 'admin.bas_gst_report' %}active{% endif %}" href="{{ url_for('admin.bas_gst_report') }}">BAS / GST Report</a>
+                <a class="nav-link {% if endpoint == 'finance.dashboard' %}active{% endif %}" href="{{ url_for('finance.dashboard') }}">Financial Analytics</a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-title">Tools</div>
+                <a class="nav-link {% if endpoint == 'admin.backup_tools' %}active{% endif %}" href="{{ url_for('admin.backup_tools') }}">Backup & Export</a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-title">Quick Links</div>
+                <a class="nav-link {% if endpoint == 'admin.create_quote' %}active{% endif %}" href="{{ url_for('admin.create_quote') }}">Create Quote</a>
+                <a class="nav-link {% if endpoint == 'admin.create_invoice' %}active{% endif %}" href="{{ url_for('admin.create_invoice') }}">Create Invoice</a>
+            </div>
+        </aside>
+
+        <main class="page-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <footer>
+        {% block footer %}
+        <p><strong>&copy; 2024-2026 {{ branding_settings.business_name }}.</strong> <a href="#privacy">Privacy Policy</a> | <a href="#terms">Terms of Service</a> | <a href="#contact">Contact Us</a></p>
+        <p><strong>Developed by:</strong> Parminder Singh Jassal | <strong>Mobile:</strong> 0437 800 036</p>
+        {% endblock %}
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,500 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Financial Analytics{% endblock %}
+
+{% block extra_styles %}
+    .page-content { padding: 30px; }
+    .hero { background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%); color: #fff; border-radius: 18px; padding: 24px 26px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); margin-bottom: 24px; }
+    .eyebrow { font-size: 10px; text-transform: uppercase; letter-spacing: 1.4px; opacity: 0.82; margin-bottom: 8px; font-weight: 700; }
+    .hero h1 { font-size: 28px; margin-bottom: 10px; line-height: 1.15; font-weight: 700; }
+    .hero p { max-width: 860px; line-height: 1.55; font-size: 13px; opacity: 0.94; }
+    .layout { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 20px; }
+    .panel { background: white; border: 1px solid #ece7e2; border-radius: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .filters { padding: 20px; align-self: start; position: sticky; top: 20px; }
+    .content-panel { padding: 20px; }
+    .title { font-size: 18px; color: #5a1717; margin-bottom: 6px; font-weight: 700; }
+    .copy { font-size: 12px; color: #6f6862; line-height: 1.5; margin-bottom: 18px; }
+    .group { margin-bottom: 16px; }
+    .group-title { font-size: 10px; color: #8a4b3c; text-transform: uppercase; letter-spacing: 1.1px; margin-bottom: 10px; }
+    .field { margin-bottom: 12px; }
+    .field label { display: block; margin-bottom: 6px; font-size: 10px; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase; color: #5c4339; }
+    .field input, .field select { width: 100%; border: 1px solid #d8dfe6; border-radius: 10px; padding: 10px 12px; font-size: 13px; background: white; color: #2b2521; font-family: inherit; }
+    .field input:focus, .field select:focus { outline: none; border-color: var(--brand-primary); box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08); }
+    .quick-grid, .action-row, .tab-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .quick-btn, .tab-btn, .ghost-btn, .primary-btn { border-radius: 999px; padding: 9px 13px; font-size: 11px; font-weight: 700; border: none; cursor: pointer; }
+    .quick-btn, .ghost-btn, .tab-btn { background: #f1e5d9; color: #6d3d2d; }
+    .primary-btn { background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%); color: #fff; box-shadow: 0 12px 22px rgba(0, 0, 0, 0.12); }
+    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 18px; }
+    .metric { background: linear-gradient(180deg, #fffdfa, #faf2ea); border: 1px solid #eadfd5; border-radius: 18px; padding: 16px; }
+    .metric-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.9px; color: #8a4b3c; margin-bottom: 7px; line-height: 1.2; }
+    .metric-value { font-size: 22px; font-weight: 700; color: #561313; margin-bottom: 4px; line-height: 1.1; }
+    .metric-note { font-size: 10px; color: #7a726c; line-height: 1.25; }
+    .snapshots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+    .snapshot { background: #fbf3eb; border: 1px solid #eadfd5; border-radius: 18px; padding: 15px; color: #6d3d2d; font-size: 11px; }
+    .snapshot strong { display: block; margin-top: 6px; font-size: 16px; color: #5a1717; line-height: 1.15; }
+    .toolbar { display: flex; justify-content: space-between; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+    .toolbar-copy { font-size: 11px; color: #736961; }
+    .tab-btn.active { background: #7f1d1d; color: #fff; }
+    .finance-section { display: none; }
+    .finance-section.active { display: block; }
+    .section-head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; margin-bottom: 12px; }
+    .section-head h2 { font-size: 20px; color: #5a1717; font-weight: 700; }
+    .section-head span { font-size: 13px; color: #736961; }
+    .chart-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+    .chart-card { background: #fffdfa; border: 1px solid #eadfd5; border-radius: 18px; padding: 16px; }
+    .chart-card h3 { font-size: 13px; color: #5a1717; margin-bottom: 10px; font-weight: 700; }
+    .chart-list { display: flex; flex-direction: column; gap: 10px; }
+    .chart-row { display: grid; grid-template-columns: minmax(0, 1fr) 64px; gap: 10px; align-items: center; }
+    .chart-label { font-size: 11px; color: #5c4339; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chart-bar-wrap { background: #f7efe6; border-radius: 999px; height: 10px; overflow: hidden; margin-top: 4px; }
+    .chart-bar { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--brand-primary), #f59e0b); }
+    .chart-value { font-size: 11px; font-weight: 700; color: #166534; text-align: right; }
+    .table-wrap { overflow-x: auto; border: 1px solid #eadfd5; border-radius: 18px; background: #fffdfa; }
+    .finance-table { min-width: 820px; }
+    .finance-table th { background: #faf1e8; color: #744938; font-size: 10px; text-transform: uppercase; letter-spacing: 0.9px; padding: 13px 15px; text-align: left; }
+    .finance-table td { padding: 13px 15px; border-top: 1px solid #f0e4da; font-size: 12px; vertical-align: top; }
+    .finance-table tr:hover td { background: #fff8f1; }
+    .money { color: #166534; font-weight: 700; }
+    .pending { color: #9a3412; }
+    .status { display: inline-block; padding: 5px 9px; border-radius: 999px; font-size: 10px; font-weight: 700; text-transform: uppercase; background: #ece7e2; color: #4b5563; }
+    .status.paid { background: #d1fae5; color: #065f46; }
+    .status.partial { background: #fef3c7; color: #92400e; }
+    .status.overdue { background: #fee2e2; color: #991b1b; }
+    .status.issued { background: #dbeafe; color: #1d4ed8; }
+    .empty { text-align: center; padding: 38px 16px; color: #7a726c; font-size: 12px; }
+    @media (max-width: 1180px) { .layout { grid-template-columns: 1fr; } .filters { position: static; } .chart-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 760px) { .snapshots { grid-template-columns: 1fr; } .hero h1 { font-size: 24px; } .hero, .filters, .content-panel { padding: 18px; } }
+{% endblock %}
+
+{% block footer %}
+    <p><strong>&copy; 2024-2026 {{ app_settings.business_name }}.</strong> <a href="#privacy">Privacy Policy</a> | <a href="#terms">Terms of Service</a> | <a href="#contact">Contact Us</a></p>
+    <p>Financial Analytics recalculates from invoice totals, paid amounts, and invoice line items for the filters selected above.</p>
+{% endblock %}
+
+{% block content %}
+    <div class="hero">
+        <div class="eyebrow">Finance Command Centre</div>
+        <h1>Financial Analytics</h1>
+        <p>Review finance by invoice, customer, product, service, day, month, year, or custom date range. Results are recalculated from your selected filters and can focus on received, invoiced, or pending value.</p>
+    </div>
+
+    <div class="layout">
+        <aside class="panel filters">
+            <div class="title">Report Filters</div>
+            <div class="copy">Set the exact finance criteria you want to inspect. Product and service figures use allocated received amounts when invoices are partially paid.</div>
+
+            <div class="group">
+                <div class="group-title">Date Range</div>
+                <div class="field">
+                    <label for="start-date">From Date</label>
+                    <input type="date" id="start-date">
+                </div>
+                <div class="field">
+                    <label for="end-date">To Date</label>
+                    <input type="date" id="end-date">
+                </div>
+            </div>
+
+            <div class="group">
+                <div class="group-title">Quick Range</div>
+                <div class="quick-grid">
+                    <button class="quick-btn" onclick="setQuickRange('today')">Today</button>
+                    <button class="quick-btn" onclick="setQuickRange('month')">This Month</button>
+                    <button class="quick-btn" onclick="setQuickRange('year')">This Year</button>
+                    <button class="quick-btn" onclick="setQuickRange('all')">All Time</button>
+                </div>
+            </div>
+
+            <div class="group">
+                <div class="group-title">Analysis</div>
+                <div class="field">
+                    <label for="group-by">Date Grouping</label>
+                    <select id="group-by">
+                        <option value="day">Day</option>
+                        <option value="week">Week</option>
+                        <option value="month" selected>Month</option>
+                        <option value="year">Year</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="value-basis">Calculate By</label>
+                    <select id="value-basis">
+                        <option value="received" selected>Received Amount</option>
+                        <option value="invoiced">Invoiced Amount</option>
+                        <option value="pending">Pending Amount</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="invoice-status">Invoice Status</label>
+                    <select id="invoice-status">
+                        <option value="active" selected>Active Finance Only</option>
+                        <option value="all">All Statuses</option>
+                        <option value="PAID">Paid</option>
+                        <option value="PARTIAL">Partial</option>
+                        <option value="ISSUED">Issued</option>
+                        <option value="OVERDUE">Overdue</option>
+                        <option value="DRAFT">Draft</option>
+                        <option value="CANCELLED">Cancelled</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="item-type">Item Scope</label>
+                    <select id="item-type">
+                        <option value="all" selected>Products and Services</option>
+                        <option value="product">Products Only</option>
+                        <option value="service">Services Only</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="customer-id">Customer</label>
+                    <select id="customer-id">
+                        <option value="">All Customers</option>
+                        {% for customer in customers %}
+                        <option value="{{ customer.id }}">{{ customer.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="search-term">Search</label>
+                    <input type="text" id="search-term" placeholder="Invoice, customer, product, service">
+                </div>
+            </div>
+
+            <div class="action-row">
+                <button class="primary-btn" onclick="loadReports()">Apply Report</button>
+                <button class="ghost-btn" onclick="resetFilters()">Reset</button>
+                <button class="ghost-btn" onclick="exportReport()">Export Current Tab</button>
+            </div>
+        </aside>
+
+        <div class="panel content-panel">
+            <div class="metrics">
+                <div class="metric"><div class="metric-label">Total Received</div><div class="metric-value" id="metric-received">$0.00</div><div class="metric-note">Collected in selection</div></div>
+                <div class="metric"><div class="metric-label">Total Invoiced</div><div class="metric-value" id="metric-invoiced">$0.00</div><div class="metric-note">Invoice value</div></div>
+                <div class="metric"><div class="metric-label">Pending Balance</div><div class="metric-value" id="metric-pending">$0.00</div><div class="metric-note">Outstanding amount</div></div>
+                <div class="metric"><div class="metric-label">Invoices</div><div class="metric-value" id="metric-invoices">0</div><div class="metric-note">Matched rows</div></div>
+                <div class="metric"><div class="metric-label">Customers</div><div class="metric-value" id="metric-customers">0</div><div class="metric-note">Unique customers</div></div>
+                <div class="metric"><div class="metric-label">Paid or Partial</div><div class="metric-value" id="metric-paid">0</div><div class="metric-note">Invoices with money received</div></div>
+                <div class="metric"><div class="metric-label">Est. Product Gross Profit</div><div class="metric-value" id="metric-profit">$0.00</div><div class="metric-note">Based on product cost price</div></div>
+                <div class="metric"><div class="metric-label">Sales GST</div><div class="metric-value" id="metric-sales-gst">$0.00</div><div class="metric-note">Charged to customers</div></div>
+                <div class="metric"><div class="metric-label">Purchase Spend</div><div class="metric-value" id="metric-purchase-spend">$0.00</div><div class="metric-note">Money spent on stock</div></div>
+                <div class="metric"><div class="metric-label">Purchase GST</div><div class="metric-value" id="metric-purchase-gst">$0.00</div><div class="metric-note">GST paid to suppliers</div></div>
+                <div class="metric"><div class="metric-label">Net GST</div><div class="metric-value" id="metric-net-gst">$0.00</div><div class="metric-note">Collected minus paid</div></div>
+                <div class="metric"><div class="metric-label">Est. Net Profit</div><div class="metric-value" id="metric-net-profit">$0.00</div><div class="metric-note">Received minus spend</div></div>
+            </div>
+
+            <div class="snapshots">
+                <div class="snapshot">Current Metric<strong id="basis-label">Received Amount</strong></div>
+                <div class="snapshot">Product / Service Total<strong id="item-total-metric">$0.00</strong></div>
+                <div class="snapshot">Time Grouping<strong id="group-label">Month</strong></div>
+            </div>
+
+            <div class="chart-grid">
+                <div class="chart-card">
+                    <h3>Top Customers</h3>
+                    <div class="chart-list" id="chart-customers"></div>
+                </div>
+                <div class="chart-card">
+                    <h3>Top Products / Services</h3>
+                    <div class="chart-list" id="chart-items"></div>
+                </div>
+                <div class="chart-card">
+                    <h3>Recent Time Trend</h3>
+                    <div class="chart-list" id="chart-time"></div>
+                </div>
+            </div>
+
+            <div class="toolbar">
+                <div class="toolbar-copy">Use the tabs to switch between finance views without changing the filters.</div>
+                <div class="tab-row">
+                    <button class="tab-btn active" data-tab="invoice" onclick="switchTab('invoice')">Invoice Wise</button>
+                    <button class="tab-btn" data-tab="customer" onclick="switchTab('customer')">Customer Wise</button>
+                    <button class="tab-btn" data-tab="item" onclick="switchTab('item')">Product / Service Wise</button>
+                    <button class="tab-btn" data-tab="time" onclick="switchTab('time')">Date / Month / Year Wise</button>
+                </div>
+            </div>
+
+            <section class="finance-section active" id="section-invoice">
+                <div class="section-head"><h2>Invoice Finance</h2><span id="invoice-count">0 invoices</span></div>
+                <div class="table-wrap">
+                    <table class="finance-table">
+                        <thead><tr><th>Invoice</th><th>Customer</th><th>Date</th><th>Status</th><th>Total</th><th>Received</th><th>Pending</th><th>Product Share</th><th>Service Share</th></tr></thead>
+                        <tbody id="invoice-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="finance-section" id="section-customer">
+                <div class="section-head"><h2>Customer Finance</h2><span id="customer-count">0 customers</span></div>
+                <div class="table-wrap">
+                    <table class="finance-table">
+                        <thead><tr><th>Customer</th><th>Invoices</th><th>Total Invoiced</th><th>Total Received</th><th>Pending</th></tr></thead>
+                        <tbody id="customer-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="finance-section" id="section-item">
+                <div class="section-head"><h2>Product / Service Finance</h2><span id="item-count">0 items</span></div>
+                <div class="table-wrap">
+                    <table class="finance-table">
+                        <thead><tr><th>Name</th><th>Type</th><th>Lines</th><th>Quantity</th><th>Total Invoiced</th><th>Total Received</th><th>Pending</th><th>Current Metric</th></tr></thead>
+                        <tbody id="item-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="finance-section" id="section-time">
+                <div class="section-head"><h2>Time-Based Finance</h2><span id="time-count">0 periods</span></div>
+                <div class="table-wrap">
+                    <table class="finance-table">
+                        <thead><tr><th>Period</th><th>Invoices</th><th>Total Invoiced</th><th>Total Received</th><th>Pending</th><th>Current Metric</th></tr></thead>
+                        <tbody id="time-body"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let activeTab = 'invoice';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        setDefaultDates();
+        loadReports();
+    });
+
+    function formatDate(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
+    function setDefaultDates() {
+        const today = new Date();
+        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+        document.getElementById('start-date').value = formatDate(monthStart);
+        document.getElementById('end-date').value = formatDate(today);
+    }
+
+    function setQuickRange(range) {
+        const today = new Date();
+        let start = new Date(today);
+        if (range === 'month') start = new Date(today.getFullYear(), today.getMonth(), 1);
+        if (range === 'year') start = new Date(today.getFullYear(), 0, 1);
+        if (range === 'all') start = new Date(2000, 0, 1);
+        document.getElementById('start-date').value = formatDate(start);
+        document.getElementById('end-date').value = formatDate(today);
+        loadReports();
+    }
+
+    function resetFilters() {
+        setDefaultDates();
+        document.getElementById('group-by').value = 'month';
+        document.getElementById('value-basis').value = 'received';
+        document.getElementById('invoice-status').value = 'active';
+        document.getElementById('item-type').value = 'all';
+        document.getElementById('customer-id').value = '';
+        document.getElementById('search-term').value = '';
+        loadReports();
+    }
+
+    function getFilters() {
+        return {
+            start_date: document.getElementById('start-date').value,
+            end_date: document.getElementById('end-date').value,
+            group_by: document.getElementById('group-by').value,
+            value_basis: document.getElementById('value-basis').value,
+            invoice_status: document.getElementById('invoice-status').value,
+            item_type: document.getElementById('item-type').value,
+            customer_id: document.getElementById('customer-id').value,
+            search: document.getElementById('search-term').value
+        };
+    }
+
+    function money(value) {
+        return '$' + Number(value || 0).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function setEmpty(target, message) {
+        document.getElementById(target).innerHTML = `<tr><td colspan="20" class="empty">${message}</td></tr>`;
+    }
+
+    function switchTab(tab) {
+        activeTab = tab;
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
+        document.querySelectorAll('.finance-section').forEach(section => section.classList.toggle('active', section.id === `section-${tab}`));
+    }
+
+    function statusClass(status) {
+        const value = String(status || '').toLowerCase();
+        if (value === 'paid') return 'paid';
+        if (value === 'partial') return 'partial';
+        if (value === 'overdue') return 'overdue';
+        if (value === 'issued') return 'issued';
+        return '';
+    }
+
+    async function loadReports() {
+        try {
+            const response = await fetch('/admin/finance/api/reports', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(getFilters())
+            });
+            const data = await response.json();
+            renderSummary(data.summary, data);
+            renderInvoices(data.invoice_wise.items);
+            renderCustomers(data.customer_wise.items);
+            renderItems(data.item_wise.items);
+            renderTime(data.time_wise.items);
+            renderCharts(data.charts);
+        } catch (error) {
+            setEmpty('invoice-body', 'Unable to load invoice report.');
+            setEmpty('customer-body', 'Unable to load customer report.');
+            setEmpty('item-body', 'Unable to load product and service report.');
+            setEmpty('time-body', 'Unable to load time report.');
+        }
+    }
+
+    function renderSummary(summary, payload) {
+        document.getElementById('metric-received').textContent = money(summary.total_received);
+        document.getElementById('metric-invoiced').textContent = money(summary.total_invoiced);
+        document.getElementById('metric-pending').textContent = money(summary.total_pending);
+        document.getElementById('metric-invoices').textContent = summary.total_invoices;
+        document.getElementById('metric-customers').textContent = summary.unique_customers;
+        document.getElementById('metric-paid').textContent = summary.paid_invoice_count;
+        document.getElementById('metric-profit').textContent = money(summary.estimated_product_gross_profit);
+        document.getElementById('metric-sales-gst').textContent = money(summary.sales_gst_collected);
+        document.getElementById('metric-purchase-spend').textContent = money(summary.purchase_spend);
+        document.getElementById('metric-purchase-gst').textContent = money(summary.purchase_gst_paid);
+        document.getElementById('metric-net-gst').textContent = money(summary.net_gst_liability);
+        document.getElementById('metric-net-profit').textContent = money(summary.estimated_net_profit);
+        document.getElementById('basis-label').textContent = payload.filters.value_basis.charAt(0).toUpperCase() + payload.filters.value_basis.slice(1) + ' Amount';
+        document.getElementById('item-total-metric').textContent = money(payload.item_wise.metric_total);
+        document.getElementById('group-label').textContent = payload.filters.group_by.charAt(0).toUpperCase() + payload.filters.group_by.slice(1);
+    }
+
+    function renderBars(targetId, items, labelKey, valueKey) {
+        const target = document.getElementById(targetId);
+        if (!items || !items.length) {
+            target.innerHTML = '<div class="empty">No data for this chart.</div>';
+            return;
+        }
+
+        const maxValue = Math.max(...items.map(item => Number(item[valueKey] || 0)), 1);
+        target.innerHTML = items.map(item => {
+            const value = Number(item[valueKey] || 0);
+            const width = Math.max((value / maxValue) * 100, 4);
+            return `
+                <div class="chart-row">
+                    <div>
+                        <div class="chart-label">${item[labelKey]}</div>
+                        <div class="chart-bar-wrap"><div class="chart-bar" style="width:${width}%"></div></div>
+                    </div>
+                    <div class="chart-value">${money(value)}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderCharts(charts) {
+        renderBars('chart-customers', charts.top_customers || [], 'customer_name', 'metric_value');
+        renderBars('chart-items', charts.top_items || [], 'name', 'metric_value');
+        renderBars('chart-time', charts.time_trend || [], 'period', 'metric_value');
+    }
+
+    async function exportReport() {
+        const response = await fetch('/admin/finance/api/export', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...getFilters(), report_type: activeTab })
+        });
+
+        if (!response.ok) {
+            alert('Export failed.');
+            return;
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const disposition = response.headers.get('Content-Disposition') || '';
+        const match = disposition.match(/filename=\"([^\"]+)\"/);
+        const filename = match ? match[1] : `finance_${activeTab}.csv`;
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+    }
+
+    function renderInvoices(items) {
+        document.getElementById('invoice-count').textContent = `${items.length} invoices`;
+        if (!items.length) return setEmpty('invoice-body', 'No invoices matched the selected filters.');
+        document.getElementById('invoice-body').innerHTML = items.map(item => `
+            <tr>
+                <td><strong>${item.invoice_number}</strong></td>
+                <td>${item.customer_name}</td>
+                <td>${item.invoice_date}</td>
+                <td><span class="status ${statusClass(item.status)}">${item.status}</span></td>
+                <td class="money">${money(item.total_amount)}</td>
+                <td class="money">${money(item.amount_paid)}</td>
+                <td class="money pending">${money(item.pending)}</td>
+                <td>${money(item.products_received)} of ${money(item.products_total)}</td>
+                <td>${money(item.services_received)} of ${money(item.services_total)}</td>
+            </tr>
+        `).join('');
+    }
+
+    function renderCustomers(items) {
+        document.getElementById('customer-count').textContent = `${items.length} customers`;
+        if (!items.length) return setEmpty('customer-body', 'No customers matched the selected filters.');
+        document.getElementById('customer-body').innerHTML = items.map(item => `
+            <tr>
+                <td><strong>${item.customer_name}</strong></td>
+                <td>${item.invoice_count}</td>
+                <td class="money">${money(item.total_invoiced)}</td>
+                <td class="money">${money(item.total_received)}</td>
+                <td class="money pending">${money(item.total_pending)}</td>
+            </tr>
+        `).join('');
+    }
+
+    function renderItems(items) {
+        document.getElementById('item-count').textContent = `${items.length} items`;
+        if (!items.length) return setEmpty('item-body', 'No products or services matched the selected filters.');
+        document.getElementById('item-body').innerHTML = items.map(item => `
+            <tr>
+                <td><strong>${item.name}</strong></td>
+                <td>${item.type}</td>
+                <td>${item.line_count}</td>
+                <td>${item.quantity}</td>
+                <td class="money">${money(item.total_invoiced)}</td>
+                <td class="money">${money(item.total_received)}</td>
+                <td class="money pending">${money(item.total_pending)}</td>
+                <td class="money">${money(item.metric_value)}</td>
+            </tr>
+        `).join('');
+    }
+
+    function renderTime(items) {
+        document.getElementById('time-count').textContent = `${items.length} periods`;
+        if (!items.length) return setEmpty('time-body', 'No date, month, or year groups matched the selected filters.');
+        document.getElementById('time-body').innerHTML = items.map(item => `
+            <tr>
+                <td><strong>${item.period}</strong></td>
+                <td>${item.invoice_count}</td>
+                <td class="money">${money(item.total_invoiced)}</td>
+                <td class="money">${money(item.total_received)}</td>
+                <td class="money pending">${money(item.total_pending)}</td>
+                <td class="money">${money(item.metric_value)}</td>
+            </tr>
+        `).join('');
+    }
+</script>
+{% endblock %}

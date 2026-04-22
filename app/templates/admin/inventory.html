@@ -1,0 +1,156 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Inventory - Admin{% endblock %}
+
+{% block extra_styles %}
+    .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin-bottom: 24px; }
+    .stat-card { background: white; padding: 22px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); border-top: 4px solid var(--brand-primary); }
+    .stat-label { font-size: 12px; color: #777; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 8px; }
+    .stat-value { font-size: 28px; color: var(--brand-primary); font-weight: 700; }
+    .stock-low { color: var(--brand-secondary); font-weight: 700; }
+    .stock-ok { color: #166534; font-weight: 700; }
+    .split-grid { display: grid; grid-template-columns: 1.3fr 0.9fr; gap: 20px; }
+    .adjust-form { display: grid; gap: 12px; }
+    .adjust-form input, .adjust-form select { border: 1px solid #d9e0e6; border-radius: 4px; padding: 10px; font: inherit; }
+    @media (max-width: 980px) { .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .split-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) { .stats-grid { grid-template-columns: 1fr; } }
+{% endblock %}
+
+{% block content %}
+    <div class="section">
+        <h2>Inventory Overview</h2>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">Products</div><div class="stat-value">{{ products|length }}</div></div>
+        <div class="stat-card"><div class="stat-label">Low Stock Items</div><div class="stat-value">{{ low_stock_items|length }}</div></div>
+        <div class="stat-card"><div class="stat-label">Total Units</div><div class="stat-value">{{ products|sum(attribute='quantity_in_stock') }}</div></div>
+        <div class="stat-card"><div class="stat-label">Stock Value</div><div class="stat-value">${{ '%.2f'|format(total_stock_value or 0) }}</div></div>
+    </div>
+
+    <div class="split-grid">
+        <div class="section">
+            <h2>Current Stock</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>SKU</th>
+                        <th>Category</th>
+                        <th>Cost</th>
+                        <th>Sell</th>
+                        <th>Stock</th>
+                        <th>Reorder</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if products %}
+                        {% for product in products %}
+                        <tr>
+                            <td><strong>{{ product.name }}</strong></td>
+                            <td>{{ product.sku or '-' }}</td>
+                            <td>{{ product.category }}</td>
+                            <td>${{ '%.2f'|format(product.cost_price or 0) }}</td>
+                            <td>${{ '%.2f'|format(product.selling_price or 0) }}</td>
+                            <td class="{% if product.is_low_stock() %}stock-low{% else %}stock-ok{% endif %}">{{ product.quantity_in_stock }}</td>
+                            <td>{{ product.reorder_level }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="7" style="text-align:center; padding:30px; color:#7f8c8d;">No inventory products found.</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <div>
+            <div class="section">
+                <h2>Stock Adjustment</h2>
+                <form class="adjust-form" onsubmit="adjustStock(event)">
+                    <select id="adjust-product" required>
+                        <option value="">Select product</option>
+                        {% for product in products %}
+                            <option value="{{ product.id }}">{{ product.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <input id="adjust-quantity" type="number" required placeholder="Quantity delta, e.g. 5 or -2">
+                    <input id="adjust-notes" type="text" placeholder="Reason / notes">
+                    <button class="btn-primary" type="submit">Apply Adjustment</button>
+                </form>
+            </div>
+            <div class="section">
+                <h2>Low Stock</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Stock</th>
+                            <th>Reorder</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if low_stock_items %}
+                            {% for product in low_stock_items %}
+                            <tr>
+                                <td><strong>{{ product.name }}</strong></td>
+                                <td class="stock-low">{{ product.quantity_in_stock }}</td>
+                                <td>{{ product.reorder_level }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="3" style="text-align:center; padding:20px; color:#7f8c8d;">No low stock items.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section">
+                <h2>Recent Movements</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Qty</th>
+                            <th>Reference</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if transactions %}
+                            {% for tx in transactions[:12] %}
+                            <tr>
+                                <td>{{ tx.transaction_date.strftime('%d-%m-%Y') if tx.transaction_date else 'N/A' }}</td>
+                                <td>{{ tx.transaction_type }}</td>
+                                <td>{{ tx.quantity }}</td>
+                                <td>{{ tx.reference_id or '-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="4" style="text-align:center; padding:20px; color:#7f8c8d;">No inventory transactions yet.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+async function adjustStock(event) {
+    event.preventDefault();
+    const payload = {
+        product_id: document.getElementById('adjust-product').value,
+        quantity_delta: document.getElementById('adjust-quantity').value,
+        notes: document.getElementById('adjust-notes').value
+    };
+    const response = await fetch('{{ url_for("admin.adjust_inventory") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+    });
+    const result = await response.json();
+    alert(result.message || (result.success ? 'Stock adjusted.' : 'Unable to adjust stock.'));
+    if (result.success) window.location.reload();
+}
+</script>
+{% endblock %}

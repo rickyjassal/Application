@@ -1,0 +1,27 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}BAS / GST Report - Admin{% endblock %}
+
+{% block content %}
+    <div class="section">
+        <h2>BAS / GST Report</h2>
+        <form method="get" style="display:flex; gap:12px; flex-wrap:wrap; align-items:end;">
+            <div><label for="from_date">From</label><input id="from_date" name="from_date" type="date" value="{{ from_date }}"></div>
+            <div><label for="to_date">To</label><input id="to_date" name="to_date" type="date" value="{{ to_date }}"></div>
+            <div><button type="submit" class="btn-primary">Refresh</button></div>
+        </form>
+    </div>
+    <div class="section">
+        <table>
+            <tbody>
+                <tr><th>Sales Ex GST</th><td>${{ '%.2f'|format(report.sales_ex_gst) }}</td></tr>
+                <tr><th>GST On Sales</th><td>${{ '%.2f'|format(report.sales_gst) }}</td></tr>
+                <tr><th>Sales Inc GST</th><td>${{ '%.2f'|format(report.sales_inc_gst) }}</td></tr>
+                <tr><th>Purchases Ex GST</th><td>${{ '%.2f'|format(report.purchase_ex_gst) }}</td></tr>
+                <tr><th>GST On Purchases</th><td>${{ '%.2f'|format(report.purchase_gst) }}</td></tr>
+                <tr><th>Purchases Inc GST</th><td>${{ '%.2f'|format(report.purchase_inc_gst) }}</td></tr>
+                <tr><th>Net GST Payable</th><td><strong>${{ '%.2f'|format(report.net_gst_payable) }}</strong></td></tr>
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

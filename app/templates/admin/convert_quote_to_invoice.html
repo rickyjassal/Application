@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convert Quote to Invoice - {{ branding_settings.business_name }}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #f5f5f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+
+        .container {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+            max-width: 1200px;
+            padding: 30px;
+        }
+
+        .header {
+            align-items: center;
+            border-bottom: 2px solid #007bff;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+        }
+
+        .header h1 {
+            align-items: center;
+            color: #333;
+            display: flex;
+            font-size: 28px;
+            gap: 10px;
+        }
+
+        .header h1 i {
+            color: #007bff;
+        }
+
+        .back-btn {
+            background: #f0f0f0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 10px 20px;
+        }
+
+        .badge {
+            background: #007bff;
+            border-radius: 4px;
+            color: #fff;
+            display: inline-block;
+            font-size: 12px;
+            margin-left: 10px;
+            padding: 5px 10px;
+        }
+
+        .form-section {
+            margin-bottom: 28px;
+        }
+
+        .section-title {
+            border-bottom: 2px solid #007bff;
+            color: #333;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+        }
+
+        .form-row {
+            display: grid;
+            gap: 15px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            color: #333;
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        select,
+        input[type="text"],
+        input[type="date"],
+        input[type="number"],
+        textarea {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: inherit;
+            font-size: 14px;
+            padding: 10px;
+            width: 100%;
+        }
+
+        select:focus,
+        input:focus,
+        textarea:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
+            outline: none;
+        }
+
+        .readonly-field {
+            background: #f7f7f7;
+            color: #666;
+        }
+
+        .customer-info {
+            background: #f9f9f9;
+            border-radius: 5px;
+            display: none;
+            margin-top: 10px;
+            padding: 15px;
+        }
+
+        .customer-info h4 {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .customer-info p {
+            color: #666;
+            font-size: 13px;
+            margin: 5px 0;
+        }
+
+        .line-items-table {
+            border-collapse: collapse;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .line-items-table th {
+            background: #007bff;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .line-items-table td {
+            border-bottom: 1px solid #ddd;
+            padding: 12px;
+            vertical-align: top;
+        }
+
+        .line-items-table input,
+        .line-items-table select {
+            padding: 8px;
+        }
+
+        .line-total {
+            color: #333;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .btn-add-item {
+            background: #4caf50;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 15px;
+            padding: 10px 20px;
+        }
+
+        .btn-remove {
+            background: #ff6b6b;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 6px 12px;
+        }
+
+        .totals-section {
+            background: #f9f9f9;
+            border-radius: 5px;
+            display: grid;
+            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            margin-top: 20px;
+            padding: 15px;
+        }
+
+        .total-item {
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+        }
+
+        .total-item.input-row {
+            align-items: center;
+            gap: 12px;
+        }
+
+        .total-item.input-row label {
+            margin-bottom: 0;
+        }
+
+        .total-item.input-row input {
+            max-width: 180px;
+            text-align: right;
+        }
+
+        .total-item.final {
+            border-bottom: none;
+            color: #007bff;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .amount {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        .btn-save,
+        .btn-cancel {
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 12px 30px;
+        }
+
+        .btn-save {
+            background: #007bff;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .btn-cancel {
+            background: #999;
+            color: #fff;
+        }
+
+        .alert {
+            border-radius: 5px;
+            display: none;
+            margin-bottom: 15px;
+            padding: 15px;
+        }
+
+        .alert-error {
+            background: #ffebee;
+            border-left: 4px solid #c33;
+            color: #c33;
+        }
+
+        .alert-success {
+            background: #e8f5e9;
+            border-left: 4px solid #2e7d32;
+            color: #2e7d32;
+        }
+
+        .loading {
+            display: none;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .spinner {
+            animation: spin 1s linear infinite;
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #007bff;
+            height: 40px;
+            width: 40px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            border-radius: 4px;
+            color: #1976d2;
+            margin-bottom: 20px;
+            padding: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <i class="fas fa-file-invoice"></i>
+                Convert Quote to Invoice
+                <span class="badge">Quote #{{ quote.quote_number }}</span>
+            </h1>
+            <button class="back-btn" onclick="window.history.back()">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
+        </div>
+
+        <div class="alert alert-error" id="errorAlert"></div>
+        <div class="alert alert-success" id="successAlert"></div>
+
+        <div class="info-box">
+            <i class="fas fa-info-circle"></i> Converting Quote #{{ quote.quote_number }} to Invoice. You can edit all details below.
+        </div>
+
+        <form id="invoiceForm">
+            <!-- Customer Section -->
+            <div class="form-section">
+                <h3 class="section-title">Customer Information</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Customer *</label>
+                        <input type="text" id="customerName" value="{{ quote.customer.name if quote.customer else '' }}" class="readonly-field" readonly>
+                        <input type="hidden" id="customerId" value="{{ quote.customer_id }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="text" value="{{ quote.customer.email if quote.customer else '' }}" class="readonly-field" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoice Details Section -->
+            <div class="form-section">
+                <h3 class="section-title">Invoice Details</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Invoice Date</label>
+                        <input type="date" value="{{ now().strftime('%Y-%m-%d') }}" class="readonly-field" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Due Date *</label>
+                        <input type="date" id="dueDate" value="{{ default_due_date }}" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Reference</label>
+                        <input type="text" id="reference" placeholder="e.g. PO-001">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Line Items Section -->
+            <div class="form-section">
+                <h3 class="section-title">Line Items</h3>
+                <table class="line-items-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Unit Price</th>
+                            <th>Quantity</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lineItemsTableBody">
+                        {% for item in quote.line_items %}
+                        <tr class="line-item-row" data-product-id="{{ item.product_id or '' }}" data-service-id="{{ item.service_id or '' }}">
+                            <td>
+                                <input type="text" class="description-input" value="{% if item.product %}{{ item.product.name }}{% elif item.service %}{{ item.service.name }}{% else %}{{ item.description }}{% endif %}" required>
+                            </td>
+                            <td>
+                                <input type="number" class="unit-price-input" value="{{ item.unit_price }}" step="0.01" required>
+                            </td>
+                            <td>
+                                <input type="number" class="quantity-input" value="{{ item.quantity }}" step="0.01" required>
+                            </td>
+                            <td>
+                                <span class="line-total">${{ (item.quantity * item.unit_price)|round(2) }}</span>
+                            </td>
+                            <td>
+                                <button type="button" class="btn-remove" onclick="removeLineItem(this)">
+                                    <i class="fas fa-trash"></i> Remove
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button type="button" class="btn-add-item" onclick="addLineItem()">
+                    <i class="fas fa-plus"></i> Add Item
+                </button>
+            </div>
+
+            <!-- Totals Section -->
+            <div class="form-section">
+                <h3 class="section-title">Totals</h3>
+                <div class="totals-section">
+                    <div class="total-item">
+                        <span>Subtotal:</span>
+                        <span class="amount" id="subtotalAmount">$0.00</span>
+                    </div>
+                    <div class="total-item">
+                        <span>GST (10%):</span>
+                        <span class="amount" id="gstAmount">$0.00</span>
+                    </div>
+                    <div class="total-item final">
+                        <span>Total Amount:</span>
+                        <span id="totalAmount">$0.00</span>
+                    </div>
+                    <div class="total-item input-row">
+                        <label>Advance Payment:</label>
+                        <input type="number" id="advancePayment" value="0" step="0.01" onchange="calculateTotals()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes Section -->
+            <div class="form-section">
+                <h3 class="section-title">Additional Information</h3>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="notes" rows="4" placeholder="Enter any additional notes...">{{ quote.notes or '' }}</textarea>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="buttons">
+                <button type="button" class="btn-cancel" onclick="window.history.back()">Cancel</button>
+                <button type="button" class="btn-save" onclick="submitForm()" id="submitBtn">
+                    <i class="fas fa-check"></i> Create Invoice
+                </button>
+            </div>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Creating invoice...</p>
+        </div>
+    </div>
+
+    <script>
+        function calculateTotals() {
+            let subtotal = 0;
+            document.querySelectorAll('.line-item-row').forEach(row => {
+                const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
+                const price = parseFloat(row.querySelector('.unit-price-input').value) || 0;
+                const total = quantity * price;
+                row.querySelector('.line-total').textContent = '$' + total.toFixed(2);
+                subtotal += total;
+            });
+
+            const gst = subtotal * 0.10;
+            const total = subtotal + gst;
+
+            document.getElementById('subtotalAmount').textContent = '$' + subtotal.toFixed(2);
+            document.getElementById('gstAmount').textContent = '$' + gst.toFixed(2);
+            document.getElementById('totalAmount').textContent = '$' + total.toFixed(2);
+        }
+
+        function addLineItem() {
+            const tbody = document.getElementById('lineItemsTableBody');
+            const row = document.createElement('tr');
+            row.className = 'line-item-row';
+            row.innerHTML = `
+                <td>
+                    <input type="text" class="description-input" placeholder="Item description" required>
+                </td>
+                <td>
+                    <input type="number" class="unit-price-input" value="0" step="0.01" required>
+                </td>
+                <td>
+                    <input type="number" class="quantity-input" value="1" step="0.01" required>
+                </td>
+                <td>
+                    <span class="line-total">$0.00</span>
+                </td>
+                <td>
+                    <button type="button" class="btn-remove" onclick="removeLineItem(this)">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+            attachInputListeners(row);
+            calculateTotals();
+        }
+
+        function removeLineItem(btn) {
+            btn.closest('tr').remove();
+            calculateTotals();
+        }
+
+        function attachInputListeners(row) {
+            row.querySelectorAll('.quantity-input, .unit-price-input').forEach(input => {
+                input.addEventListener('change', calculateTotals);
+            });
+        }
+
+        document.querySelectorAll('.line-item-row').forEach(row => {
+            attachInputListeners(row);
+        });
+
+        async function submitForm() {
+            const customerId = document.getElementById('customerId').value;
+            const dueDate = document.getElementById('dueDate').value;
+            const reference = document.getElementById('reference').value;
+            const notes = document.getElementById('notes').value;
+            const advancePayment = parseFloat(document.getElementById('advancePayment').value) || 0;
+
+            const items = [];
+            document.querySelectorAll('.line-item-row').forEach(row => {
+                items.push({
+                    description: row.querySelector('.description-input').value,
+                    quantity: parseFloat(row.querySelector('.quantity-input').value),
+                    unit_price: parseFloat(row.querySelector('.unit-price-input').value),
+                    product_id: row.dataset.productId || null,
+                    service_id: row.dataset.serviceId || null
+                });
+            });
+
+            if (items.length === 0) {
+                showError('Please add at least one line item');
+                return;
+            }
+
+            const data = {
+                customer_id: customerId,
+                due_date: dueDate,
+                reference: reference,
+                notes: notes,
+                advance_payment: advancePayment,
+                items: items
+            };
+
+            try {
+                document.getElementById('submitBtn').disabled = true;
+                document.getElementById('loading').style.display = 'block';
+
+                const response = await fetch('{{ url_for("admin.convert_quote_to_invoice", quote_id=quote.id) }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showSuccess('Invoice created successfully! Redirecting...');
+                    setTimeout(() => {
+                        window.location.href = '{{ url_for("admin.view_invoice", invoice_id="ID") }}'.replace('ID', result.id);
+                    }, 1500);
+                } else {
+                    showError(result.message || 'Failed to create invoice');
+                }
+            } catch (error) {
+                showError('Error: ' + error.message);
+            } finally {
+                document.getElementById('submitBtn').disabled = false;
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function showError(message) {
+            const alert = document.getElementById('errorAlert');
+            alert.textContent = message;
+            alert.style.display = 'block';
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const alert = document.getElementById('successAlert');
+            alert.textContent = message;
+            alert.style.display = 'block';
+        }
+
+        // Initialize totals on page load
+        calculateTotals();
+    </script>
+</body>
+</html>

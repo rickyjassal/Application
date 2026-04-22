@@ -1,0 +1,74 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Backup Tools - Admin{% endblock %}
+
+{% block extra_styles %}
+    .tool-grid { display: grid; gap: 20px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .tool-card { border: 1px solid #eceff3; border-radius: 8px; padding: 22px; }
+    .tool-card h3 { font-size: 17px; margin-bottom: 10px; }
+    .tool-card p { color: #5d6772; line-height: 1.6; margin-bottom: 14px; }
+    .tool-card input[type=file] { display: block; margin: 14px 0; width: 100%; }
+    .result-box { background: #fafafa; border-radius: 6px; color: #495463; font-size: 13px; margin-top: 14px; padding: 14px; white-space: pre-line; }
+    @media (max-width: 900px) { .tool-grid { grid-template-columns: 1fr; } }
+{% endblock %}
+
+{% block content %}
+    <div class="section">
+        <h2>Backup & Export Tools</h2>
+        <p>Export a full JSON backup, then restore it later with the matching import tool. The backup includes settings, master data, documents, line items, payments, purchases, and inventory history.</p>
+        <div class="tool-grid">
+            <div class="tool-card">
+                <h3>Export Backup</h3>
+                <p>Download the current application data as a structured JSON file for safekeeping, migration, or manual archive storage.</p>
+                <a class="btn-primary" href="{{ url_for('admin.export_backup') }}">Download JSON Backup</a>
+            </div>
+            <div class="tool-card">
+                <h3>Restore Backup</h3>
+                <p>Import a previously exported JSON file. Existing records are updated where ids match, and missing records are created.</p>
+                <input type="file" id="backup-file" accept=".json,application/json">
+                <button type="button" class="btn-primary" onclick="importBackup()">Import Backup</button>
+                <div class="result-box" id="import-result" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function importBackup() {
+    const fileInput = document.getElementById('backup-file');
+    const resultBox = document.getElementById('import-result');
+    if (!fileInput.files.length) {
+        alert('Choose a backup JSON file first.');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('backup_file', fileInput.files[0]);
+
+    const response = await fetch('{{ url_for("admin.import_backup") }}', {
+        method: 'POST',
+        body: formData
+    });
+    const result = await response.json();
+    resultBox.style.display = 'block';
+    if (result.success) {
+        const summary = result.summary || {};
+        resultBox.textContent = [
+            result.message,
+            `Customers: ${summary.customers || 0}`,
+            `Products: ${summary.products || 0}`,
+            `Services: ${summary.services || 0}`,
+            `Suppliers: ${summary.suppliers || 0}`,
+            `Quotes: ${summary.quotes || 0}`,
+            `Invoices: ${summary.invoices || 0}`,
+            `Payments: ${summary.payments || 0}`,
+            `Purchases: ${summary.purchases || 0}`,
+            `Inventory Transactions: ${summary.inventory_transactions || 0}`
+        ].join('\n');
+    } else {
+        resultBox.textContent = result.message || 'Import failed.';
+    }
+}
+</script>
+{% endblock %}

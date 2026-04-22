@@ -1,0 +1,55 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Customer Statement - Admin{% endblock %}
+
+{% block content %}
+    <div class="section">
+        <h2>Customer Statement</h2>
+        <p><strong>{{ customer.business_name or customer.name }}</strong></p>
+        <p>{{ customer.email or '' }}{% if customer.phone %} | {{ customer.phone }}{% endif %}</p>
+        <div style="margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap;">
+            <a class="btn-primary" href="{{ url_for('admin.customer_statement_pdf', customer_id=customer.id) }}">Download Statement PDF</a>
+            <a class="btn-secondary" href="{{ url_for('admin.customers') }}">Back to Customers</a>
+        </div>
+    </div>
+    <div class="section">
+        <table>
+            <thead>
+                <tr>
+                    <th>Invoice #</th>
+                    <th>Invoice Date</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                    <th>Paid</th>
+                    <th>Outstanding</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if invoices %}
+                    {% for invoice in invoices %}
+                    <tr>
+                        <td><a class="link" href="{{ url_for('admin.view_invoice', invoice_id=invoice.id) }}">{{ invoice.invoice_number }}</a></td>
+                        <td>{{ invoice.invoice_date.strftime('%d-%m-%Y') if invoice.invoice_date else 'N/A' }}</td>
+                        <td>{{ invoice.due_date.strftime('%d-%m-%Y') if invoice.due_date else 'N/A' }}</td>
+                        <td>{{ invoice.status }}</td>
+                        <td>${{ '%.2f'|format(invoice.total_amount or 0) }}</td>
+                        <td>${{ '%.2f'|format(invoice.amount_paid or 0) }}</td>
+                        <td>${{ '%.2f'|format(invoice.get_balance_due() or 0) }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr><td colspan="7" style="text-align:center; padding:30px; color:#7f8c8d;">No invoices found for this customer.</td></tr>
+                {% endif %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="4" style="text-align:right;">Totals</th>
+                    <th>${{ '%.2f'|format(totals.invoiced) }}</th>
+                    <th>${{ '%.2f'|format(totals.paid) }}</th>
+                    <th>${{ '%.2f'|format(totals.outstanding) }}</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+{% endblock %}

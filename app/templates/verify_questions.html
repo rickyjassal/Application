@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Security Questions - Business Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ec2325 0%, #d91c1e 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .verify-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 480px;
+            padding: 50px 40px;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .verify-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .icon-circle {
+            width: 80px;
+            height: 80px;
+            background: #f0f8ff;
+            border: 2px solid #ec2325;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+        }
+
+        .verify-header h1 {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .verify-header p {
+            color: #7f8c8d;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #ecf0f1;
+            border-radius: 3px;
+            margin: 30px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ec2325 0%, #d91c1e 100%);
+            width: 50%;
+            transition: width 0.3s ease;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .question-label {
+            display: block;
+            margin-bottom: 12px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ecf0f1;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #ec2325;
+            box-shadow: 0 0 0 3px rgba(236, 35, 37, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: #bdc3c7;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ec2325 0%, #d91c1e 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(236, 35, 37, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #ecf0f1;
+            color: #2c3e50;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-secondary:hover {
+            background: #d5dbdb;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+            border-left: 4px solid #c33;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #ecf0f1;
+            border-top-color: #ec2325;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .info-text {
+            background: #f9f9f9;
+            border: 1px solid #ecf0f1;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .info-text strong {
+            color: #2c3e50;
+        }
+
+        .copyright {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #ecf0f1;
+            text-align: center;
+            color: #95a5a6;
+            font-size: 11px;
+        }
+
+        .question-number {
+            display: inline-block;
+            background: #ec2325;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .footer-info {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #ecf0f1;
+            font-size: 10px;
+            line-height: 1.4;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="verify-container">
+        <div class="verify-header">
+            <div class="icon-circle">&#10003;</div>
+            <h1>Verify Identity</h1>
+            <p>Answer your security questions to continue</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+
+        <div class="info-text">
+            <strong>Answer all 3 security questions correctly</strong> to proceed with resetting your password.
+        </div>
+
+        <form id="verifyQuestionsForm">
+            <div class="error-message" id="errorMessage"></div>
+
+            <div id="questionsContainer">
+                <!-- Questions will be loaded here -->
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 10px; color: #7f8c8d;">Verifying answers...</p>
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary" id="submitBtn">Verify Answers</button>
+                <a href="/forgot-password" class="btn btn-secondary">Back</a>
+            </div>
+        </form>
+
+        <div class="copyright">
+            &#169; 2024-2026 Western IT Solutions. All rights reserved.<br>
+            <div class="footer-info">
+                Design and Developed by Western IT Solutions<br>
+                Parminder Singh Jassal | Mobile: 0437800036<br>
+                &#169; All Rights Reserved for Western IT Solutions
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let questionsData = [];
+        const username = new URLSearchParams(window.location.search).get("username");
+
+        async function loadQuestions() {
+            if (!username) {
+                document.getElementById("errorMessage").textContent = "Username not provided. Please start over.";
+                document.getElementById("errorMessage").classList.add("show");
+                return;
+            }
+
+            try {
+                const response = await fetch("/get-security-questions", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ username })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success && Array.isArray(data.questions)) {
+                    questionsData = data.questions;
+                    renderQuestions();
+                    return;
+                }
+
+                document.getElementById("errorMessage").textContent = data.message || "Failed to load security questions.";
+                document.getElementById("errorMessage").classList.add("show");
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById("errorMessage").textContent = "Connection error. Please try again.";
+                document.getElementById("errorMessage").classList.add("show");
+            }
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById("questionsContainer");
+            container.innerHTML = "";
+
+            questionsData.forEach((question, index) => {
+                const questionDiv = document.createElement("div");
+                questionDiv.className = "form-group";
+                questionDiv.innerHTML = `
+                    <label class="question-label">
+                        <span class="question-number">${index + 1}</span>
+                        ${question.question}
+                    </label>
+                    <input
+                        type="text"
+                        name="answer_${index}"
+                        placeholder="Your answer"
+                        required
+                        autocomplete="off"
+                    />
+                `;
+                container.appendChild(questionDiv);
+            });
+        }
+
+        document.getElementById("verifyQuestionsForm").addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const errorDiv = document.getElementById("errorMessage");
+            const loading = document.getElementById("loading");
+            const submitBtn = document.getElementById("submitBtn");
+
+            errorDiv.classList.remove("show");
+            errorDiv.textContent = "";
+
+            const answers = questionsData.map((question, index) => {
+                const input = document.querySelector(`input[name="answer_${index}"]`);
+                return {
+                    question: question.question,
+                    answer: input ? input.value : ""
+                };
+            });
+
+            loading.style.display = "block";
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch("/verify-questions", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ username, answers })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    window.location.href = "/reset-password?token=" + encodeURIComponent(data.token || "");
+                    return;
+                }
+
+                errorDiv.textContent = data.message || "Incorrect answers. Please try again.";
+                errorDiv.classList.add("show");
+            } catch (error) {
+                console.error("Error:", error);
+                errorDiv.textContent = "Connection error. Please try again.";
+                errorDiv.classList.add("show");
+            } finally {
+                loading.style.display = "none";
+                submitBtn.disabled = false;
+            }
+        });
+
+        loadQuestions();
+    </script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}View Quotes - Admin{% endblock %}
+
+{% block extra_styles %}
+    .btn { padding: 8px 14px; font-size: 12px; }
+    .status-pending { padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: 600; background: var(--brand-soft); color: var(--brand-primary); }
+    .status-approved { padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: 600; background: #e8f5e9; color: #2e7d32; }
+    .status-cancelled { padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: 600; background: #ffebee; color: #c33; }
+{% endblock %}
+
+{% block content %}
+    <div class="section">
+        <h2>All Quotes</h2>
+        <a href="{{ url_for('admin.create_quote') }}" class="btn-primary">Create Quote</a>
+    </div>
+    <div class="section">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Quote #</th>
+                    <th>Customer</th>
+                    <th>Status</th>
+                    <th>Quote Date</th>
+                    <th>Expiry Date</th>
+                    <th>Amount</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if quotes %}
+                    {% for quote in quotes %}
+                    <tr>
+                        <td><strong>{{ quote.quote_number }}</strong></td>
+                        <td>{{ quote.customer.name if quote.customer else 'N/A' }}</td>
+                        <td>
+                            <span class="{% if quote.status == 'Pending' %}status-pending{% elif quote.status == 'Approved' %}status-approved{% else %}status-cancelled{% endif %}">
+                                {{ quote.status }}
+                            </span>
+                        </td>
+                        <td>{{ quote.quote_date.strftime('%d-%m-%Y') if quote.quote_date else 'N/A' }}</td>
+                        <td>{{ quote.expiry_date.strftime('%d-%m-%Y') if quote.expiry_date else 'N/A' }}</td>
+                        <td>${{ '%.2f'|format(quote.total_amount or 0) }}</td>
+                        <td><a href="/admin/quote/{{ quote.id }}" class="btn">View</a></td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 30px; color: #7f8c8d;">No quotes yet. <a href="/admin/create-quote" class="link" style="font-weight: 600;">Create one now</a></td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

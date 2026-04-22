@@ -1,0 +1,38 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Activity - Admin{% endblock %}
+
+{% block content %}
+    <div class="section">
+        <h2>Reminder History & Audit Trail</h2>
+        <p class="hint">Recent important system actions including resends, settings updates, stock adjustments, and exports.</p>
+    </div>
+    <div class="section">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Actor</th>
+                    <th>Entity</th>
+                    <th>Action</th>
+                    <th>Message</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if logs %}
+                    {% for log in logs %}
+                    <tr>
+                        <td>{{ log.created_on.strftime('%d-%m-%Y %H:%M') if log.created_on else 'N/A' }}</td>
+                        <td>{{ log.actor or 'System' }}</td>
+                        <td>{{ log.entity_type }}</td>
+                        <td>{{ log.action }}</td>
+                        <td>{{ log.message }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr><td colspan="5" style="text-align:center; padding:30px; color:#7f8c8d;">No activity recorded yet.</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

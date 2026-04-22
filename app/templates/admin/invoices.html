@@ -1,0 +1,137 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}View Invoices - Admin{% endblock %}
+
+{% block extra_styles %}
+    .btn { padding: 8px 14px; font-size: 12px; }
+    .filters { background: white; border-radius: 8px; display: grid; gap: 15px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 20px; padding: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+    .filters input, .filters select { border: 1px solid #dce2e8; border-radius: 4px; padding: 10px; width: 100%; font-family: inherit; }
+    .filters label { color: #5b6773; display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; text-transform: uppercase; }
+    .filter-actions { align-items: end; display: flex; gap: 10px; }
+    .filter-btn, .clear-btn { border-radius: 4px; display: inline-block; font-size: 13px; font-weight: 600; padding: 10px 16px; text-decoration: none; }
+    .filter-btn { background: var(--brand-primary); color: white; border: none; cursor: pointer; }
+    .clear-btn { background: #eef2f5; color: #2c3e50; }
+    .status-badge { border-radius: 999px; display: inline-block; font-size: 12px; font-weight: 700; padding: 5px 10px; }
+    .status-PAID { background: #e8f7ee; color: #1e824c; }
+    .status-PARTIAL { background: #fff6e5; color: #a26a00; }
+    .status-DRAFT, .status-ISSUED { background: #eef4ff; color: #2357b5; }
+    .status-OVERDUE { background: #ffe9e9; color: #c0392b; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-resend { background: #c0392b; color: #fff; }
+{% endblock %}
+
+{% block content %}
+    <div class="section">
+        <h2>All Invoices</h2>
+        <a href="{{ url_for('admin.create_invoice') }}" class="btn-primary">Create Invoice</a>
+    </div>
+    <form class="filters" method="get">
+        <div>
+            <label for="status">Status</label>
+            <select id="status" name="status">
+                <option value="">All statuses</option>
+                {% for value in ['DRAFT', 'ISSUED', 'PARTIAL', 'PAID', 'OVERDUE', 'CANCELLED'] %}
+                    <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ value }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="customer">Customer</label>
+            <input id="customer" name="customer" type="text" value="{{ filters.customer }}" placeholder="Search customer">
+        </div>
+        <div>
+            <label for="item">Item</label>
+            <input id="item" name="item" type="text" value="{{ filters.item }}" placeholder="Product or service">
+        </div>
+        <div>
+            <label for="due_from">Due From</label>
+            <input id="due_from" name="due_from" type="date" value="{{ filters.due_from }}">
+        </div>
+        <div>
+            <label for="due_to">Due To</label>
+            <input id="due_to" name="due_to" type="date" value="{{ filters.due_to }}">
+        </div>
+        <div>
+            <label for="sort">Sort By</label>
+            <select id="sort" name="sort">
+                <option value="due_date" {% if filters.sort == 'due_date' %}selected{% endif %}>Due date</option>
+                <option value="invoice_date" {% if filters.sort == 'invoice_date' %}selected{% endif %}>Invoice date</option>
+                <option value="customer" {% if filters.sort == 'customer' %}selected{% endif %}>Customer</option>
+            </select>
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="filter-btn">Apply Filters</button>
+            <a href="/admin/invoices" class="clear-btn">Clear</a>
+        </div>
+    </form>
+    <div class="section">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Invoice #</th>
+                    <th>Customer</th>
+                    <th>Status</th>
+                    <th>Invoice Date</th>
+                    <th>Due Date</th>
+                    <th>Total Amount</th>
+                    <th>Balance Due</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if invoices %}
+                    {% for invoice in invoices %}
+                    <tr>
+                        <td><strong>{{ invoice.invoice_number }}</strong></td>
+                        <td>{{ invoice.customer.name if invoice.customer else 'N/A' }}</td>
+                        <td><span class="status-badge status-{{ invoice.status }}">{{ invoice.status }}</span></td>
+                        <td>{{ invoice.invoice_date.strftime('%d-%m-%Y') if invoice.invoice_date else 'N/A' }}</td>
+                        <td>{{ invoice.due_date.strftime('%d-%m-%Y') if invoice.due_date else 'N/A' }}</td>
+                        <td><strong>${{ invoice.total_amount | round(2) if invoice.total_amount else 0 }}</strong></td>
+                        <td>
+                            <strong>${{ '%.2f'|format(invoice.get_balance_due() or 0) }}</strong>
+                            {% if invoice.credit_note_amount %}
+                                <div style="font-size: 11px; color: #8c2d2d;">Credit: ${{ '%.2f'|format(invoice.credit_note_amount or 0) }}</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="actions">
+                                <a href="/admin/invoice/{{ invoice.id }}" class="btn">View</a>
+                                {% if invoice.status == 'OVERDUE' and invoice.customer and invoice.customer.email %}
+                                    <button type="button" class="btn btn-resend" onclick="resendInvoice({{ invoice.id }})">Resend</button>
+                                    <button type="button" class="btn btn-secondary" onclick="sendReminder({{ invoice.id }})">Reminder</button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 30px; color: #7f8c8d;">No invoices yet. <a href="/admin/create-invoice" class="link" style="font-weight: 600;">Create one now</a></td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+async function resendInvoice(invoiceId) {
+    const response = await fetch(`/admin/invoice/${invoiceId}/email`, {method: 'POST', headers: {'Content-Type': 'application/json'}});
+    const result = await response.json();
+    alert(result.message || (result.success ? 'Invoice resent.' : 'Unable to resend invoice.'));
+    if (result.success) {
+        window.location.reload();
+    }
+}
+
+async function sendReminder(invoiceId) {
+    const response = await fetch(`/admin/invoice/${invoiceId}/remind`, {method: 'POST', headers: {'Content-Type': 'application/json'}});
+    const result = await response.json();
+    alert(result.message || (result.success ? 'Reminder sent.' : 'Unable to send reminder.'));
+    if (result.success) {
+        window.location.reload();
+    }
+}
+</script>
+{% endblock %}

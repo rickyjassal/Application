@@ -1,0 +1,164 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Manage Products - Admin{% endblock %}
+
+{% block extra_styles %}
+    .form-container { background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 26px; display: none; }
+    .form-container.active { display: block; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin-bottom: 18px; }
+    .form-group { display: flex; flex-direction: column; }
+    .form-group label { margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+    .form-group input, .form-group textarea { border: 1px solid #d9e0e6; border-radius: 4px; font-family: inherit; font-size: 14px; padding: 10px; }
+    .form-group textarea { resize: vertical; min-height: 100px; }
+    .form-actions { display: flex; gap: 10px; margin-top: 20px; border-top: 1px solid #ecf0f1; padding-top: 20px; }
+    .message { display: none; padding: 14px; margin-bottom: 18px; border-radius: 6px; }
+    .message.show { display: block; }
+    .message.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .message.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+{% endblock %}
+
+{% block content %}
+    <div class="section">
+        <h2>Manage Products</h2>
+        <button class="btn-primary" onclick="toggleForm()">Add New Product</button>
+    </div>
+
+    <div id="addForm" class="form-container">
+        <h2>Add New Product</h2>
+        <div id="message" class="message"></div>
+        <form id="productForm" onsubmit="handleSubmit(event)">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Product Name *</label>
+                    <input type="text" name="name" required placeholder="e.g., iPhone 14 Screen">
+                </div>
+                <div class="form-group">
+                    <label>SKU *</label>
+                    <input type="text" name="sku" required placeholder="e.g., IPHONE-14-SCREEN">
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <input type="text" name="category" placeholder="e.g., Mobile Repair">
+                </div>
+                <div class="form-group">
+                    <label>Cost Price *</label>
+                    <input type="number" name="cost_price" required placeholder="100.00" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Selling Price *</label>
+                    <input type="number" name="selling_price" required placeholder="300.00" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Quantity in Stock</label>
+                    <input type="number" name="quantity_in_stock" placeholder="10" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Reorder Level</label>
+                    <input type="number" name="reorder_level" placeholder="5" value="5">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" rows="3" placeholder="Product description..."></textarea>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Add Product</button>
+                <button type="button" class="btn-secondary" onclick="toggleForm()">Cancel</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="section">
+        <h2>Existing Products</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>SKU</th>
+                    <th>Category</th>
+                    <th>Cost Price</th>
+                    <th>Selling Price</th>
+                    <th>Profit %</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if products %}
+                {% for product in products %}
+                <tr>
+                    <td><strong>{{ product.name }}</strong></td>
+                    <td>{{ product.sku }}</td>
+                    <td>{{ product.category }}</td>
+                    <td>${{ "%.2f"|format(product.cost_price) }}</td>
+                    <td>${{ "%.2f"|format(product.selling_price) }}</td>
+                    <td>
+                        {% if product.cost_price > 0 %}
+                            {{ "%.1f"|format(((product.selling_price - product.cost_price) / product.cost_price * 100)) }}%
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td>{{ product.quantity_in_stock }}</td>
+                    <td><button class="btn-secondary" style="width: auto; padding: 6px 12px;">Edit</button></td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 30px; color: #7f8c8d;">No products yet. Click "Add New Product" to get started.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function toggleForm() {
+        const form = document.getElementById('addForm');
+        form.classList.toggle('active');
+    }
+
+    async function handleSubmit(event) {
+        event.preventDefault();
+
+        const form = document.getElementById('productForm');
+        const messageDiv = document.getElementById('message');
+
+        const formData = {
+            name: form.name.value,
+            sku: form.sku.value,
+            category: form.category.value,
+            description: form.description.value,
+            cost_price: parseFloat(form.cost_price.value),
+            selling_price: parseFloat(form.selling_price.value),
+            quantity_in_stock: parseInt(form.quantity_in_stock.value) || 0,
+            reorder_level: parseInt(form.reorder_level.value) || 5
+        };
+
+        try {
+            const response = await fetch('/admin/products', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                messageDiv.textContent = 'Success: ' + data.message;
+                messageDiv.className = 'message success show';
+                form.reset();
+                setTimeout(() => { window.location.reload(); }, 1500);
+            } else {
+                messageDiv.textContent = 'Error: ' + data.message;
+                messageDiv.className = 'message error show';
+            }
+        } catch (error) {
+            messageDiv.textContent = 'Error: ' + error.message;
+            messageDiv.className = 'message error show';
+        }
+    }
+</script>
+{% endblock %}

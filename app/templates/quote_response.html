@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Western IT Solutions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            line-height: 1;
+        }
+        
+        .success .icon {
+            color: #28a745;
+        }
+        
+        .error .icon {
+            color: #dc3545;
+        }
+        
+        h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .message {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        
+        .quote-number {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #1a5490;
+            border-left: 4px solid #1a5490;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 13px;
+            color: #999;
+        }
+        
+        .footer-info {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #eee;
+            font-size: 10px;
+            line-height: 1.4;
+            color: #999;
+        }
+        
+        .company-info {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        
+        .company-info strong {
+            color: #1a5490;
+        }
+        
+        a {
+            color: #1a5490;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        .success {
+            border-top: 4px solid #28a745;
+        }
+        
+        .error {
+            border-top: 4px solid #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container {% if success %}success{% else %}error{% endif %}">
+        {% if success %}
+            <div class="icon">✓</div>
+        {% else %}
+            <div class="icon">✕</div>
+        {% endif %}
+        
+        <h1>{{ title }}</h1>
+        
+        <p class="message">{{ message }}</p>
+        
+        {% if quote_number %}
+            <div class="quote-number">
+                Quote #{{ quote_number }}
+            </div>
+        {% endif %}
+        
+        <div class="footer">
+            <div class="company-info">
+                <strong>Western IT Solutions</strong><br>
+                Email: <a href="mailto:info@westernitsolutions.com.au">info@westernitsolutions.com.au</a><br>
+                Phone: 0286009876
+            </div>
+            <div class="footer-info">
+                <p style="margin-top: 15px; margin-bottom: 0;">
+                    Design and Developed by Western IT Solutions<br>
+                    Parminder Singh Jassal | Mobile: 0437800036<br>
+                    © All Rights Reserved for Western IT Solutions
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

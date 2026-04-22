@@ -1,0 +1,353 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Create Quote - {{ branding_settings.business_name }}{% endblock %}
+
+{% block extra_head %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block extra_styles %}
+    .page-content { max-width: 1240px; }
+    .create-card { background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 30px; }
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid var(--brand-primary); padding-bottom: 15px; gap: 16px; flex-wrap: wrap; }
+    .page-header h1 { font-size: 28px; color: #333; display: flex; align-items: center; gap: 10px; }
+    .page-header h1 i { color: var(--brand-primary); }
+    .back-btn { background: #f0f0f0; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 14px; transition: background 0.3s; }
+    .back-btn:hover { background: #e0e0e0; }
+    .form-section { margin-bottom: 30px; }
+    .section-title { font-size: 18px; font-weight: 600; color: #333; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--brand-primary); }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-weight: 600; color: #333; margin-bottom: 5px; font-size: 14px; }
+    select, input[type="text"], input[type="number"], textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; font-family: inherit; }
+    select:focus, input:focus, textarea:focus { outline: none; border-color: var(--brand-primary); box-shadow: 0 0 5px rgba(0, 0, 0, 0.08); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .customer-info { background: #f9f9f9; padding: 15px; border-radius: 5px; margin-top: 10px; display: none; }
+    .customer-info h4 { color: #333; margin-bottom: 10px; font-size: 14px; }
+    .customer-info p { font-size: 13px; color: #666; margin: 5px 0; }
+    .line-items-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    .line-items-table th { background: var(--brand-primary); color: white; padding: 12px; text-align: left; font-size: 13px; font-weight: 600; }
+    .line-items-table td { padding: 12px; border-bottom: 1px solid #ddd; }
+    .line-items-table tr:hover { background: #f9f9f9; }
+    .line-items-table input, .line-items-table select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+    .btn-remove { background: #ff6b6b; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; transition: background 0.3s; }
+    .btn-remove:hover { background: #ff5252; }
+    .btn-add-item { background: #4CAF50; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 14px; margin-bottom: 15px; transition: background 0.3s; }
+    .btn-add-item:hover { background: #45a049; }
+    .totals-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 5px; }
+    .total-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ddd; }
+    .total-item.final { border-bottom: none; font-weight: 700; font-size: 16px; color: var(--brand-primary); }
+    .total-item label { margin-bottom: 0; font-weight: 500; color: #666; }
+    .total-item .amount { font-weight: 700; color: #333; }
+    .buttons { display: flex; gap: 10px; margin-top: 30px; justify-content: flex-end; }
+    .btn-save { background: var(--brand-primary); color: white; border: none; padding: 12px 30px; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 600; transition: background 0.3s; }
+    .btn-save:hover { background: var(--brand-secondary); }
+    .btn-cancel { background: #999; color: white; border: none; padding: 12px 30px; border-radius: 5px; cursor: pointer; font-size: 14px; transition: background 0.3s; }
+    .btn-cancel:hover { background: #777; }
+    .alert { padding: 15px; border-radius: 5px; margin-bottom: 15px; display: none; }
+    .alert-error { background: #ffebee; color: #c33; border-left: 4px solid #c33; }
+    .alert-success { background: #e8f5e9; color: #2e7d32; border-left: 4px solid #2e7d32; }
+    .loading { display: none; text-align: center; padding: 20px; }
+    .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--brand-primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto; }
+    .empty-state { text-align: center; padding: 40px 20px; color: #999; }
+    .empty-state i { font-size: 48px; margin-bottom: 15px; color: #ddd; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } .line-items-table { font-size: 12px; } .line-items-table td, .line-items-table th { padding: 8px; } .create-card { padding: 20px; } }
+{% endblock %}
+
+{% block content %}
+    <div class="create-card">
+        <div class="page-header">
+            <h1><i class="fas fa-file-alt"></i>Create Quote</h1>
+            <button class="back-btn" onclick="window.history.back()"><i class="fas fa-arrow-left"></i> Back</button>
+        </div>
+
+        <div id="alertBox" class="alert"></div>
+
+        <form id="quoteForm">
+            <div class="form-section">
+                <div class="section-title">Customer Information</div>
+                <div class="form-group">
+                    <label for="customer_id">Select Customer *</label>
+                    <select id="customer_id" name="customer_id" required onchange="loadCustomerInfo()">
+                        <option value="">-- Select a Customer --</option>
+                        {% for customer in customers %}
+                        <option value="{{ customer.id }}" data-abn="{{ customer.abn }}" data-address="{{ customer.street_address }}" data-phone="{{ customer.phone }}">
+                            {{ customer.name }} ({{ customer.business_name }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div id="customerInfo" class="customer-info">
+                    <h4>Customer Details</h4>
+                    <p><strong>Business Name:</strong> <span id="businessName"></span></p>
+                    <p><strong>ABN:</strong> <span id="customerABN"></span></p>
+                    <p><strong>Address:</strong> <span id="customerAddress"></span></p>
+                    <p><strong>Phone:</strong> <span id="customerPhone"></span></p>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-title">Tax Setup</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="gst_mode">Quote Pricing</label>
+                        <select id="gst_mode" name="gst_mode" onchange="updateTotals()">
+                            {% for mode in gst_modes %}
+                            <option value="{{ mode.value }}">{{ mode.label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-title">Quote Items</div>
+                <div id="noItemsMessage" class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>No items added yet. Click "Add Item" to get started.</p>
+                </div>
+                <table id="lineItemsTable" class="line-items-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%;">Description</th>
+                            <th style="width: 15%;">Type</th>
+                            <th style="width: 15%;">Quantity</th>
+                            <th style="width: 15%;">Unit Price</th>
+                            <th style="width: 15%;">Total</th>
+                            <th style="width: 10%;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lineItemsBody"></tbody>
+                </table>
+                <button type="button" class="btn-add-item" onclick="addLineItem()"><i class="fas fa-plus"></i> Add Item</button>
+            </div>
+
+            <div class="totals-section">
+                <div><div class="total-item"><label>Subtotal:</label><span class="amount" id="subtotal">$0.00</span></div></div>
+                <div><div class="total-item"><label id="gstLabel">GST (10%):</label><span class="amount" id="gstAmount">$0.00</span></div></div>
+                <div><div class="total-item final"><label>Total:</label><span class="amount" id="totalAmount">$0.00</span></div></div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-title">Additional Information</div>
+                <div class="form-group">
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" name="notes" rows="3" placeholder="Add any additional notes or terms..."></textarea>
+                </div>
+            </div>
+
+            <div class="buttons">
+                <button type="button" class="btn-cancel" onclick="window.history.back()">Cancel</button>
+                <button type="submit" class="btn-save" id="submitBtn"><i class="fas fa-save"></i> Create Quote</button>
+            </div>
+
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Creating quote...</p>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const products = {{ products | tojson }};
+    const services = {{ services | tojson }};
+    let lineItems = [];
+    let itemCounter = 0;
+
+    function loadCustomerInfo() {
+        const select = document.getElementById('customer_id');
+        const option = select.options[select.selectedIndex];
+        const infoDiv = document.getElementById('customerInfo');
+
+        if (select.value) {
+            document.getElementById('businessName').textContent = option.text.split('(')[1].replace(')', '');
+            document.getElementById('customerABN').textContent = option.dataset.abn || 'N/A';
+            document.getElementById('customerAddress').textContent = option.dataset.address || 'N/A';
+            document.getElementById('customerPhone').textContent = option.dataset.phone || 'N/A';
+            infoDiv.style.display = 'block';
+        } else {
+            infoDiv.style.display = 'none';
+        }
+    }
+
+    function addLineItem() {
+        const customerId = document.getElementById('customer_id').value;
+        if (!customerId) {
+            showAlert('Please select a customer first', 'error');
+            return;
+        }
+
+        itemCounter++;
+        const itemId = `item_${itemCounter}`;
+
+        const productOptions = products.map(p => `<option value="product_${p.id}">${p.name} - $${p.selling_price.toFixed(2)}</option>`).join('');
+        const serviceOptions = services.map(s => `<option value="service_${s.id}">${s.name} - $${(s.base_price || 0).toFixed(2)}</option>`).join('');
+
+        const row = document.createElement('tr');
+        row.id = `row_${itemId}`;
+        row.innerHTML = `
+            <td>
+                <select class="itemSelect" onchange="updateLineItem('${itemId}')">
+                    <option value="">-- Select Product or Service --</option>
+                    <optgroup label="Products">${productOptions}</optgroup>
+                    <optgroup label="Services">${serviceOptions}</optgroup>
+                </select>
+            </td>
+            <td id="type_${itemId}">-</td>
+            <td><input type="number" class="quantity" value="1" min="1" onchange="updateLineItem('${itemId}')"></td>
+            <td>$<input type="number" class="unitPrice" value="0.00" step="0.01" min="0" onchange="updateLineItem('${itemId}')" style="width: 100%;"></td>
+            <td class="total" id="total_${itemId}">$0.00</td>
+            <td><button type="button" class="btn-remove" onclick="removeLineItem('${itemId}')"><i class="fas fa-trash"></i> Remove</button></td>
+        `;
+
+        document.getElementById('lineItemsBody').appendChild(row);
+        document.getElementById('lineItemsTable').style.display = 'table';
+        document.getElementById('noItemsMessage').style.display = 'none';
+        lineItems.push({ id: itemId, type: '', description: '', quantity: 1, unitPrice: 0 });
+    }
+
+    function updateLineItem(itemId) {
+        const row = document.getElementById(`row_${itemId}`);
+        const select = row.querySelector('.itemSelect');
+        const quantity = parseFloat(row.querySelector('.quantity').value) || 1;
+        const unitPrice = parseFloat(row.querySelector('.unitPrice').value) || 0;
+        const selectedValue = select.value;
+        let type = '-';
+
+        if (selectedValue.startsWith('product_')) {
+            const productId = parseInt(selectedValue.split('_')[1]);
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                type = 'Product';
+                row.querySelector('.unitPrice').value = (product.selling_price || unitPrice).toFixed(2);
+            }
+        } else if (selectedValue.startsWith('service_')) {
+            const serviceId = parseInt(selectedValue.split('_')[1]);
+            const service = services.find(s => s.id === serviceId);
+            if (service) {
+                type = 'Service';
+                row.querySelector('.unitPrice').value = (service.base_price || unitPrice).toFixed(2);
+            }
+        }
+
+        document.getElementById(`type_${itemId}`).textContent = type;
+        const finalPrice = parseFloat(row.querySelector('.unitPrice').value) || 0;
+        const total = quantity * finalPrice;
+        document.getElementById(`total_${itemId}`).textContent = `$${total.toFixed(2)}`;
+        updateTotals();
+    }
+
+    function removeLineItem(itemId) {
+        document.getElementById(`row_${itemId}`).remove();
+        lineItems = lineItems.filter(item => item.id !== itemId);
+
+        if (lineItems.length === 0 && document.getElementById('lineItemsBody').children.length === 0) {
+            document.getElementById('lineItemsTable').style.display = 'none';
+            document.getElementById('noItemsMessage').style.display = 'block';
+        }
+        updateTotals();
+    }
+
+    function updateTotals() {
+        const rows = document.querySelectorAll('#lineItemsBody tr');
+        const gstMode = document.getElementById('gst_mode').value;
+        let enteredTotal = 0;
+        rows.forEach(row => {
+            const totalText = row.querySelector('.total').textContent;
+            enteredTotal += parseFloat(totalText.replace('$', '')) || 0;
+        });
+        let subtotal = enteredTotal;
+        let gst = 0;
+        let total = enteredTotal;
+        if (gstMode === 'inclusive') {
+            subtotal = enteredTotal / 1.10;
+            gst = enteredTotal - subtotal;
+            total = enteredTotal;
+        } else if (gstMode === 'exclusive') {
+            subtotal = enteredTotal;
+            gst = subtotal * 0.10;
+            total = subtotal + gst;
+        }
+        document.getElementById('gstLabel').textContent = gstMode === 'inclusive' ? 'Included GST:' : (gstMode === 'none' ? 'GST:' : 'GST (10%):');
+        document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
+        document.getElementById('gstAmount').textContent = `$${gst.toFixed(2)}`;
+        document.getElementById('totalAmount').textContent = `$${total.toFixed(2)}`;
+    }
+
+    function showAlert(message, type) {
+        const alertBox = document.getElementById('alertBox');
+        alertBox.className = `alert alert-${type}`;
+        alertBox.textContent = message;
+        alertBox.style.display = 'block';
+        setTimeout(() => { alertBox.style.display = 'none'; }, 5000);
+    }
+
+    document.getElementById('quoteForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const customerId = document.getElementById('customer_id').value;
+        if (!customerId) {
+            showAlert('Please select a customer', 'error');
+            return;
+        }
+
+        const rows = document.querySelectorAll('#lineItemsBody tr');
+        if (rows.length === 0) {
+            showAlert('Please add at least one item to the quote', 'error');
+            return;
+        }
+
+        const items = [];
+        rows.forEach(row => {
+            const select = row.querySelector('.itemSelect').value;
+            const quantity = parseFloat(row.querySelector('.quantity').value);
+            const unitPrice = parseFloat(row.querySelector('.unitPrice').value);
+            if (!select) {
+                showAlert('Please complete all line items', 'error');
+                return;
+            }
+            const [type, id] = select.split('_');
+            items.push({
+                [type === 'product' ? 'product_id' : 'service_id']: parseInt(id),
+                description: row.querySelector('.itemSelect').options[row.querySelector('.itemSelect').selectedIndex].text,
+                quantity: quantity,
+                unit_price: unitPrice
+            });
+        });
+
+        if (items.length === 0) return;
+
+        document.getElementById('submitBtn').disabled = true;
+        document.getElementById('loading').style.display = 'block';
+
+        try {
+            const response = await fetch('/admin/quotes/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customer_id: parseInt(customerId),
+                    gst_mode: document.getElementById('gst_mode').value,
+                    items: items,
+                    notes: document.getElementById('notes').value
+                })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                showAlert('Quote created successfully!', 'success');
+                setTimeout(() => { window.location.href = `/admin/quote/${result.id}`; }, 2000);
+            } else {
+                showAlert(result.message || 'Error creating quote', 'error');
+            }
+        } catch (error) {
+            showAlert('Error: ' + error.message, 'error');
+        } finally {
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('loading').style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}

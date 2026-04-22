@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice - {{ invoice.invoice_number }}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #f2f2f2;
+            color: #000;
+            font-family: "Times New Roman", Times, serif;
+            padding: 20px;
+        }
+
+        .top-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+            margin: 0 auto 18px;
+            max-width: 930px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-block;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px 18px;
+            text-decoration: none;
+        }
+
+        .btn-back {
+            background: #8c8c8c;
+            color: #fff;
+        }
+
+        .btn-print {
+            background: #ec2325;
+            color: #fff;
+        }
+
+        .btn-email {
+            background: #1f7a4d;
+            color: #fff;
+        }
+
+        .invoice-sheet {
+            background: #fff;
+            margin: 0 auto;
+            max-width: 930px;
+            min-height: 1180px;
+            padding: 54px 56px 42px;
+            box-shadow: 0 3px 18px rgba(0, 0, 0, 0.08);
+        }
+
+        .header {
+            align-items: start;
+            display: grid;
+            gap: 32px;
+            grid-template-columns: 1.2fr 0.8fr;
+            margin-bottom: 34px;
+        }
+
+        .company-brand {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-mark {
+            margin-bottom: 8px;
+            width: 165px;
+        }
+
+        .brand-mark img {
+            display: block;
+            height: auto;
+            width: 100%;
+        }
+
+        .company-name {
+            font-family: Arial, sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .company-meta,
+        .customer-meta {
+            display: grid;
+            gap: 10px;
+        }
+
+        .meta-row {
+            align-items: baseline;
+            display: grid;
+            gap: 12px;
+            grid-template-columns: 92px 1fr;
+        }
+
+        .meta-label {
+            font-size: 12px;
+            letter-spacing: 0.2px;
+            text-transform: uppercase;
+        }
+
+        .meta-value {
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1.35;
+        }
+
+        .meta-value.light {
+            font-weight: 400;
+        }
+
+        .meta-value a {
+            color: #1266d3;
+        }
+
+        .invoice-side {
+            align-items: flex-end;
+            display: flex;
+            flex-direction: column;
+            padding-top: 24px;
+        }
+
+        .invoice-title {
+            color: #9da1a6;
+            font-family: Arial, sans-serif;
+            font-size: 44px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 46px;
+            text-align: right;
+            width: 280px;
+        }
+
+        .invoice-meta {
+            display: grid;
+            gap: 8px;
+            width: 280px;
+        }
+
+        .invoice-meta .meta-row {
+            align-items: center;
+            grid-template-columns: 78px 130px;
+            justify-content: end;
+            margin-bottom: 0;
+        }
+
+        .invoice-meta .meta-value {
+            font-weight: 400;
+            text-align: right;
+        }
+
+        .invoice-meta .meta-value.invoice-no {
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            text-align: right;
+        }
+
+        .invoice-meta .meta-value.ref-value {
+            font-size: 12px;
+        }
+
+        .customer-block {
+            margin-bottom: 22px;
+            margin-left: 42px;
+            max-width: 420px;
+        }
+
+        .customer-name {
+            font-family: Arial, sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 18px;
+        }
+
+        .invoice-table-wrap {
+            border: 3px solid #111;
+            margin-top: 16px;
+        }
+
+        table {
+            border-collapse: collapse;
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        .invoice-table thead th {
+            background: #cfcfcf;
+            border-right: 2px solid #111;
+            font-size: 12px;
+            font-weight: 400;
+            padding: 14px 10px;
+            text-align: center;
+        }
+
+        .invoice-table thead th:last-child {
+            border-right: 0;
+        }
+
+        .invoice-table tbody td,
+        .invoice-table tfoot td {
+            border-right: 2px solid #111;
+            border-top: 2px solid #111;
+            font-size: 12px;
+            vertical-align: top;
+        }
+
+        .invoice-table tbody td {
+            padding: 14px 10px;
+        }
+
+        .invoice-table tbody td:last-child,
+        .invoice-table tfoot td:last-child {
+            border-right: 0;
+        }
+
+        .invoice-table .desc-cell {
+            line-height: 1.35;
+            text-align: left;
+        }
+
+        .invoice-table .amount-cell,
+        .invoice-table .qty-cell,
+        .invoice-table .total-cell {
+            text-align: center;
+        }
+
+        .invoice-table .blank-space td {
+            height: 220px;
+        }
+
+        .payment-cell {
+            padding: 0;
+            vertical-align: top;
+        }
+
+        .payment-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            min-height: 180px;
+        }
+
+        .payment-box {
+            background: #e3482e;
+            color: #fff;
+            max-width: 100%;
+            min-height: 104px;
+            padding: 8px 10px 10px;
+        }
+
+        .payment-box h4 {
+            font-size: 16px;
+            font-style: normal;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-decoration: underline;
+            text-transform: uppercase;
+        }
+
+        .payment-box p {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1.7;
+        }
+
+        .payment-box .muted-line {
+            color: rgba(255, 255, 255, 0.88);
+        }
+
+        .payment-due {
+            align-items: center;
+            background: #fff5e9;
+            border-top: 1px solid rgba(227, 72, 46, 0.28);
+            display: flex;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            justify-content: space-between;
+            margin-top: 14px;
+            max-width: 100%;
+            min-height: 44px;
+            padding: 0 8px;
+        }
+
+        .payment-due span:first-child {
+            color: #b53a26;
+            text-transform: uppercase;
+        }
+
+        .payment-due span:last-child {
+            color: #000;
+            font-size: 15px;
+        }
+
+        .summary-labels-cell {
+            padding: 0;
+        }
+
+        .totals-labels {
+            font-size: 12px;
+            padding: 10px 16px 10px 0;
+            text-align: right;
+        }
+
+        .totals-labels .label-line {
+            line-height: 1.55;
+        }
+
+        .summary-values-cell {
+            background: #cfcfcf;
+            padding: 0;
+        }
+
+        .totals-values {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            padding: 10px 16px 10px;
+            text-align: right;
+        }
+
+        .totals-values .value-line {
+            line-height: 1.55;
+        }
+
+        .totals-values .balance {
+            font-size: 13px;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        .thank-you {
+            font-size: 13px;
+            font-style: italic;
+            margin-top: 48px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .notes {
+            border-top: 1px solid #d8d8d8;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            margin-top: 16px;
+            padding-top: 12px;
+        }
+
+        @media (max-width: 860px) {
+            .invoice-sheet {
+                min-height: auto;
+                padding: 28px 22px;
+            }
+
+            .invoice-title {
+                font-size: 34px;
+                margin-bottom: 22px;
+            }
+
+            .invoice-meta {
+                margin-left: 0;
+            }
+
+            .line-list {
+                min-height: auto;
+            }
+        }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 6mm;
+            }
+
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            html,
+            body {
+                background: #fff;
+                height: auto;
+                margin: 0;
+                padding: 0;
+                width: 100%;
+            }
+
+            .top-controls {
+                display: none;
+            }
+
+            .invoice-sheet {
+                box-shadow: none;
+                break-inside: avoid;
+                margin: 0;
+                max-width: none;
+                min-height: auto;
+                page-break-inside: avoid;
+                width: 100%;
+            }
+
+            .invoice-table .blank-space td {
+                height: 220px;
+            }
+
+            .summary-row {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-controls">
+        <div style="display: flex; gap: 10px;">
+            <button class="btn btn-back" onclick="window.history.back()"><i class="fas fa-arrow-left"></i> Back to Invoices</button>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            {% if invoice.get_balance_due() > 0 and invoice.customer and invoice.customer.email %}
+            <button class="btn btn-email" onclick="sendReminder()"><i class="fas fa-bell"></i> {% if invoice.status == 'OVERDUE' %}Send Reminder{% else %}Follow Up{% endif %}</button>
+            {% endif %}
+            <button class="btn btn-back" onclick="applyCreditNote()"><i class="fas fa-file-invoice-dollar"></i> Credit Note</button>
+            <button class="btn btn-back" onclick="recordRefund()"><i class="fas fa-rotate-left"></i> Refund</button>
+            <button class="btn btn-email" onclick="emailInvoice()"><i class="fas fa-envelope"></i> {% if invoice.status == 'OVERDUE' %}Resend Invoice{% else %}Email Invoice{% endif %}</button>
+            <button class="btn btn-print" onclick="window.open('{{ url_for('admin.print_invoice', invoice_id=invoice.id) }}', '_blank')"><i class="fas fa-print"></i> Print Invoice</button>
+        </div>
+    </div>
+
+    <div class="invoice-sheet">
+        <div class="header">
+            <div class="company-brand">
+                <div class="brand-mark">
+                    <img src="{{ url_for('static', filename=branding.brand_logo_path) }}" alt="{{ branding.business_name }}">
+                </div>
+
+                <div class="company-name">{{ branding.business_legal_name }}</div>
+
+                <div class="company-meta">
+                    <div class="meta-row">
+                        <div class="meta-label">ADDRESS:</div>
+                        <div class="meta-value light">{{ branding.business_address }}</div>
+                    </div>
+                    <div class="meta-row">
+                        <div class="meta-label">ABN:</div>
+                        <div class="meta-value light">{{ branding.business_abn }}</div>
+                    </div>
+                    <div class="meta-row">
+                        <div class="meta-label">CONTACT:</div>
+                        <div class="meta-value light">
+                            <a href="mailto:{{ branding.business_contact_email }}">{{ branding.business_contact_email }}</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="invoice-side">
+                <div class="invoice-title">Tax Invoice</div>
+
+                <div class="invoice-meta">
+                    <div class="meta-row">
+                        <div class="meta-label">Date:</div>
+                        <div class="meta-value">{{ invoice.invoice_date.strftime('%d/%b/%y') if invoice.invoice_date else 'N/A' }}</div>
+                    </div>
+                    <div class="meta-row">
+                        <div class="meta-label">Invoice</div>
+                        <div class="meta-value invoice-no">{{ invoice.invoice_number }}</div>
+                    </div>
+                    <div class="meta-row">
+                        <div class="meta-label">Ref:</div>
+                        <div class="meta-value ref-value">{{ invoice.reference if invoice.reference else 'N/A' }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="customer-block">
+            <div class="customer-name">
+                {{ invoice.customer.business_name if invoice.customer and invoice.customer.business_name else invoice.customer.name if invoice.customer else 'Customer' }}
+            </div>
+
+            <div class="customer-meta">
+                <div class="meta-row">
+                    <div class="meta-label">ABN:</div>
+                    <div class="meta-value">{{ invoice.customer.abn if invoice.customer and invoice.customer.abn else 'N/A' }}</div>
+                </div>
+                <div class="meta-row">
+                    <div class="meta-label">ADDRESS:</div>
+                    <div class="meta-value">
+                        {{ invoice.customer.get_full_address() if invoice.customer and invoice.customer.get_full_address() else 'N/A' }}
+                    </div>
+                </div>
+                <div class="meta-row">
+                    <div class="meta-label">TEL:</div>
+                    <div class="meta-value">{{ invoice.customer.phone if invoice.customer and invoice.customer.phone else 'N/A' }}</div>
+                </div>
+                <div class="meta-row">
+                    <div class="meta-label">EMAIL:</div>
+                    <div class="meta-value">{{ invoice.customer.email if invoice.customer and invoice.customer.email else 'N/A' }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="invoice-table-wrap">
+            <table class="invoice-table">
+                <colgroup>
+                    <col style="width: 55%;">
+                    <col style="width: 14%;">
+                    <col style="width: 11%;">
+                    <col style="width: 20%;">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Total Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if invoice.line_items %}
+                        {% for item in invoice.line_items %}
+                            <tr>
+                                <td class="desc-cell">
+                                    {% if item.product %}
+                                        {{ item.product.name }}
+                                    {% elif item.service %}
+                                        {{ item.service.name }}
+                                    {% else %}
+                                        {{ item.description }}
+                                    {% endif %}
+                                </td>
+                                <td class="amount-cell">${{ '%.2f'|format(item.unit_price or 0) }}</td>
+                                <td class="qty-cell">{{ '%.2f'|format(item.quantity or 0) }}</td>
+                                <td class="total-cell">${{ '%.2f'|format((item.quantity or 0) * (item.unit_price or 0)) }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="desc-cell">No items in this invoice</td>
+                        </tr>
+                    {% endif %}
+                    <tr class="blank-space">
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td class="payment-cell">
+                            <div class="payment-panel">
+                                <div class="payment-box">
+                                    <h4>EFT DETAILS:</h4>
+                                    <p>Bank: {{ branding.bank_name }}</p>
+                                    <p class="muted-line">Account Name: {{ branding.bank_account_name }}</p>
+                                    <p>BSB: {{ branding.bank_bsb }} A/C: {{ branding.bank_account_number }}</p>
+                                </div>
+                                <div class="payment-due">
+                                    <span>Invoice Due Date:</span>
+                                    <span>{{ invoice.due_date.strftime('%d/%b/%y') if invoice.due_date else 'N/A' }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="summary-labels-cell" colspan="2">
+                            <div class="totals-labels">
+                                <div class="label-line">Subtotal:</div>
+                                <div class="label-line">{% if invoice.gst_mode == 'inclusive' %}Included GST:{% elif invoice.gst_mode == 'none' %}GST:{% else %}GST:{% endif %}</div>
+                                <div class="label-line">Total:</div>
+                                <div class="label-line">{% if invoice.gst_mode == 'exclusive' %}(inc-GST){% elif invoice.gst_mode == 'inclusive' %}(GST included){% else %}(no GST){% endif %}</div>
+                                <div class="label-line">Credit Note:</div>
+                                <div class="label-line">Advance:</div>
+                                <div class="label-line">Balance:</div>
+                            </div>
+                        </td>
+                        <td class="summary-values-cell">
+                            <div class="totals-values">
+                                <div class="value-line">${{ '%.2f'|format(invoice.subtotal or 0) }}</div>
+                                <div class="value-line">${{ '%.2f'|format(invoice.gst_amount or 0) }}</div>
+                                <div class="value-line">${{ '%.2f'|format(invoice.total_amount or 0) }}</div>
+                                <div class="value-line">&nbsp;</div>
+                                <div class="value-line">${{ '%.2f'|format(invoice.credit_note_amount or 0) }}</div>
+                                <div class="value-line">${{ '%.2f'|format(invoice.amount_paid or 0) }}</div>
+                                <div class="value-line balance">${{ '%.2f'|format(invoice.get_balance_due() or 0) }}</div>
+                            </div>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="thank-you">THANK YOU FOR YOUR BUSINESS!</div>
+
+        {% if invoice.notes %}
+            <div class="notes"><strong>Notes:</strong> {{ invoice.notes }}</div>
+        {% endif %}
+        {% if invoice.status == 'OVERDUE' and invoice.last_resent_at %}
+            <div class="notes"><strong>Last Resent:</strong> {{ invoice.last_resent_at.strftime('%d/%m/%Y %H:%M') }} | <strong>Resend Count:</strong> {{ invoice.resend_count or 0 }}</div>
+        {% endif %}
+        {% if invoice.last_reminder_at %}
+            <div class="notes"><strong>Last Reminder:</strong> {{ invoice.last_reminder_at.strftime('%d/%m/%Y %H:%M') }} | <strong>Reminder Count:</strong> {{ invoice.reminder_count or 0 }}</div>
+        {% endif %}
+        {% if invoice.credit_note_amount %}
+            <div class="notes"><strong>Credit Note:</strong> ${{ '%.2f'|format(invoice.credit_note_amount or 0) }}{% if invoice.credit_note_reason %} | <strong>Reason:</strong> {{ invoice.credit_note_reason }}{% endif %}</div>
+        {% endif %}
+    </div>
+
+    <script>
+        async function emailInvoice() {
+            try {
+                const response = await fetch('{{ url_for("admin.email_invoice", invoice_id=invoice.id) }}', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                const result = await response.json();
+                alert(result.message || (result.success ? 'Invoice emailed.' : 'Unable to email invoice.'));
+            } catch (error) {
+                alert(`Unable to email invoice: ${error.message}`);
+            }
+        }
+
+        async function sendReminder() {
+            try {
+                const response = await fetch('{{ url_for("admin.remind_invoice", invoice_id=invoice.id) }}', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                const result = await response.json();
+                alert(result.message || (result.success ? 'Reminder sent.' : 'Unable to send reminder.'));
+                if (result.success) {
+                    window.location.reload();
+                }
+            } catch (error) {
+                alert(`Unable to send reminder: ${error.message}`);
+            }
+        }
+
+        async function applyCreditNote() {
+            const amount = prompt('Enter credit note amount');
+            if (!amount) return;
+            const reason = prompt('Enter credit note reason');
+            const response = await fetch('{{ url_for("admin.apply_credit_note", invoice_id=invoice.id) }}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({amount, reason})
+            });
+            const result = await response.json();
+            alert(result.message || (result.success ? 'Credit note applied.' : 'Unable to apply credit note.'));
+            if (result.success) {
+                window.location.reload();
+            }
+        }
+
+        async function recordRefund() {
+            const amount = prompt('Enter refund amount');
+            if (!amount) return;
+            const payment_reference = prompt('Enter refund reference (optional)');
+            const notes = prompt('Enter refund notes (optional)');
+            const response = await fetch('{{ url_for("admin.refund_invoice", invoice_id=invoice.id) }}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({amount, payment_reference, notes})
+            });
+            const result = await response.json();
+            alert(result.message || (result.success ? 'Refund recorded.' : 'Unable to record refund.'));
+            if (result.success) {
+                window.location.reload();
+            }
+        }
+    </script>
+</body>
+</html>

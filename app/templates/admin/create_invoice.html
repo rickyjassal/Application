@@ -1,0 +1,408 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Create Invoice - {{ branding_settings.business_name }}{% endblock %}
+
+{% block extra_head %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block extra_styles %}
+    .page-content { max-width: 1240px; }
+    .create-card { background: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); margin: 0 auto; padding: 30px; }
+    .page-header { align-items: center; border-bottom: 2px solid var(--brand-primary); display: flex; justify-content: space-between; margin-bottom: 30px; padding-bottom: 15px; gap: 16px; flex-wrap: wrap; }
+    .page-header h1 { align-items: center; color: #333; display: flex; font-size: 28px; gap: 10px; }
+    .page-header h1 i { color: var(--brand-primary); }
+    .back-btn { background: #f0f0f0; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; padding: 10px 20px; }
+    .form-section { margin-bottom: 28px; }
+    .section-title { border-bottom: 2px solid var(--brand-primary); color: #333; font-size: 18px; font-weight: 600; margin-bottom: 15px; padding-bottom: 10px; }
+    .form-row { display: grid; gap: 15px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { color: #333; display: block; font-size: 14px; font-weight: 600; margin-bottom: 5px; }
+    select, input[type="text"], input[type="date"], input[type="number"], textarea { border: 1px solid #ddd; border-radius: 5px; font-family: inherit; font-size: 14px; padding: 10px; width: 100%; }
+    select:focus, input:focus, textarea:focus { border-color: var(--brand-primary); box-shadow: 0 0 5px rgba(0, 0, 0, 0.08); outline: none; }
+    .readonly-field { background: #f7f7f7; color: #666; }
+    .customer-info { background: #f9f9f9; border-radius: 5px; display: none; margin-top: 10px; padding: 15px; }
+    .customer-info h4 { color: #333; font-size: 14px; margin-bottom: 10px; }
+    .customer-info p { color: #666; font-size: 13px; margin: 5px 0; }
+    .line-items-table { border-collapse: collapse; margin-top: 15px; width: 100%; }
+    .line-items-table th { background: var(--brand-primary); color: #fff; font-size: 13px; font-weight: 600; padding: 12px; text-align: left; }
+    .line-items-table td { border-bottom: 1px solid #ddd; padding: 12px; vertical-align: top; }
+    .line-items-table input, .line-items-table select { padding: 8px; }
+    .line-total { color: #333; font-weight: 600; white-space: nowrap; }
+    .btn-add-item { background: #4caf50; border: none; border-radius: 5px; color: #fff; cursor: pointer; font-size: 14px; margin-bottom: 15px; padding: 10px 20px; }
+    .btn-remove { background: #ff6b6b; border: none; border-radius: 4px; color: #fff; cursor: pointer; font-size: 12px; padding: 6px 12px; }
+    .empty-state { color: #999; padding: 40px 20px; text-align: center; }
+    .empty-state i { color: #ddd; font-size: 48px; margin-bottom: 15px; }
+    .totals-section { background: #f9f9f9; border-radius: 5px; display: grid; gap: 15px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-top: 20px; padding: 15px; }
+    .total-item { border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; padding: 10px 0; }
+    .total-item.input-row { align-items: center; gap: 12px; }
+    .total-item.input-row label { margin-bottom: 0; }
+    .total-item.input-row input { max-width: 180px; text-align: right; }
+    .total-item.final { border-bottom: none; color: var(--brand-primary); font-size: 16px; font-weight: 700; }
+    .amount { color: #333; font-weight: 700; }
+    .buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 30px; }
+    .btn-save, .btn-cancel { border: none; border-radius: 5px; cursor: pointer; font-size: 14px; padding: 12px 30px; }
+    .btn-save { background: var(--brand-primary); color: #fff; font-weight: 600; }
+    .btn-cancel { background: #999; color: #fff; }
+    .alert { border-radius: 5px; display: none; margin-bottom: 15px; padding: 15px; }
+    .alert-error { background: #ffebee; border-left: 4px solid #c33; color: #c33; }
+    .alert-success { background: #e8f5e9; border-left: 4px solid #2e7d32; color: #2e7d32; }
+    .loading { display: none; padding: 20px; text-align: center; }
+    .spinner { animation: spin 1s linear infinite; border: 4px solid #f3f3f3; border-radius: 50%; border-top: 4px solid var(--brand-primary); height: 30px; margin: 0 auto; width: 30px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } .line-items-table { font-size: 12px; } .line-items-table td, .line-items-table th { padding: 8px; } .create-card { padding: 20px; } }
+{% endblock %}
+
+{% block content %}
+    <div class="create-card">
+        <div class="page-header">
+            <h1><i class="fas fa-file-invoice"></i>Create Invoice</h1>
+            <button class="back-btn" onclick="window.history.back()"><i class="fas fa-arrow-left"></i> Back</button>
+        </div>
+
+        <div id="alertBox" class="alert"></div>
+
+        <form id="invoiceForm">
+            <div class="form-section">
+                <div class="section-title">Invoice Details</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="invoice_number_preview">Invoice Number</label>
+                        <input id="invoice_number_preview" class="readonly-field" type="text" value="Auto-generated from 01001 sequence" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="due_date">Due Date</label>
+                        <input id="due_date" name="due_date" type="date" value="{{ default_due_date }}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="reference">Reference</label>
+                    <input id="reference" name="reference" type="text" placeholder="Optional reference">
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-title">Customer Information</div>
+                <div class="form-group">
+                    <label for="customer_id">Select Customer *</label>
+                    <select id="customer_id" name="customer_id" required onchange="loadCustomerInfo()">
+                        <option value="">-- Select a Customer --</option>
+                        {% for customer in customers %}
+                            <option value="{{ customer.id }}" data-name="{{ customer.name }}" data-business-name="{{ customer.business_name or '' }}" data-abn="{{ customer.abn or '' }}" data-address="{{ customer.get_full_address() }}" data-phone="{{ customer.phone or '' }}">
+                                {{ customer.name }}{% if customer.business_name %} ({{ customer.business_name }}){% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div id="customerInfo" class="customer-info">
+                    <h4>Customer Details</h4>
+                    <p><strong>Business Name:</strong> <span id="businessName"></span></p>
+                    <p><strong>ABN:</strong> <span id="customerABN"></span></p>
+                    <p><strong>Address:</strong> <span id="customerAddress"></span></p>
+                    <p><strong>Phone:</strong> <span id="customerPhone"></span></p>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-title">Tax Setup</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="gst_mode">Invoice Pricing</label>
+                        <select id="gst_mode" name="gst_mode" onchange="updateTotals()">
+                            {% for mode in gst_modes %}
+                            <option value="{{ mode.value }}">{{ mode.label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-title">Invoice Items</div>
+                <div id="noItemsMessage" class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>No items added yet. Click "Add Item" to get started.</p>
+                </div>
+
+                <table id="lineItemsTable" class="line-items-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th style="width: 34%;">Item</th>
+                            <th style="width: 16%;">Type</th>
+                            <th style="width: 15%;">Quantity</th>
+                            <th style="width: 15%;">Unit Price</th>
+                            <th style="width: 12%;">Total</th>
+                            <th style="width: 8%;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lineItemsBody"></tbody>
+                </table>
+
+                <button type="button" class="btn-add-item" onclick="addLineItem()"><i class="fas fa-plus"></i> Add Item</button>
+            </div>
+
+            <div class="totals-section">
+                <div class="total-item"><label>Subtotal:</label><span class="amount" id="subtotal">$0.00</span></div>
+                <div class="total-item"><label id="gstLabel">GST (10%):</label><span class="amount" id="gstAmount">$0.00</span></div>
+                <div class="total-item input-row"><label for="advance_payment">Advance Payment:</label><input id="advance_payment" name="advance_payment" type="number" value="0.00" min="0" step="0.01" oninput="updateTotals()"></div>
+                <div class="total-item"><label>Balance Due:</label><span class="amount" id="balanceAmount">$0.00</span></div>
+                <div class="total-item final"><label>Total:</label><span class="amount" id="totalAmount">$0.00</span></div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-title">Additional Information</div>
+                <div class="form-group">
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" name="notes" rows="3" placeholder="Add any additional notes or terms..."></textarea>
+                </div>
+            </div>
+
+            <div class="buttons">
+                <button type="button" class="btn-cancel" onclick="window.history.back()">Cancel</button>
+                <button type="submit" class="btn-save" id="submitBtn"><i class="fas fa-save"></i> Create Invoice</button>
+            </div>
+
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Creating invoice...</p>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const products = {{ products | tojson }};
+    const services = {{ services | tojson }};
+    let itemCounter = 0;
+
+    function formatMoney(value) {
+        return `$${value.toFixed(2)}`;
+    }
+
+    function loadCustomerInfo() {
+        const select = document.getElementById('customer_id');
+        const option = select.options[select.selectedIndex];
+        const infoDiv = document.getElementById('customerInfo');
+
+        if (!select.value) {
+            infoDiv.style.display = 'none';
+            return;
+        }
+
+        document.getElementById('businessName').textContent = option.dataset.businessName || option.dataset.name || 'N/A';
+        document.getElementById('customerABN').textContent = option.dataset.abn || 'N/A';
+        document.getElementById('customerAddress').textContent = option.dataset.address || 'N/A';
+        document.getElementById('customerPhone').textContent = option.dataset.phone || 'N/A';
+        infoDiv.style.display = 'block';
+    }
+
+    function addLineItem() {
+        const customerId = document.getElementById('customer_id').value;
+        if (!customerId) {
+            showAlert('Please select a customer first', 'error');
+            return;
+        }
+
+        itemCounter += 1;
+        const itemId = `item_${itemCounter}`;
+        const productOptions = products.map(product => `<option value="product_${product.id}">${product.name}</option>`).join('');
+        const serviceOptions = services.map(service => `<option value="service_${service.id}">${service.name}</option>`).join('');
+
+        const row = document.createElement('tr');
+        row.id = `row_${itemId}`;
+        row.innerHTML = `
+            <td>
+                <select class="itemSelect" onchange="updateLineItem('${itemId}')">
+                    <option value="">-- Select Product or Service --</option>
+                    <optgroup label="Products">${productOptions}</optgroup>
+                    <optgroup label="Services">${serviceOptions}</optgroup>
+                </select>
+            </td>
+            <td id="type_${itemId}">-</td>
+            <td><input type="number" class="quantity" value="1" min="0.01" step="0.01" oninput="updateLineItem('${itemId}')"></td>
+            <td><input type="number" class="unitPrice" value="0.00" min="0" step="0.01" oninput="updateLineItem('${itemId}')"></td>
+            <td class="line-total" id="total_${itemId}">$0.00</td>
+            <td><button type="button" class="btn-remove" onclick="removeLineItem('${itemId}')"><i class="fas fa-trash"></i> Remove</button></td>
+        `;
+
+        document.getElementById('lineItemsBody').appendChild(row);
+        document.getElementById('lineItemsTable').style.display = 'table';
+        document.getElementById('noItemsMessage').style.display = 'none';
+    }
+
+    function getCatalogItem(selectedValue) {
+        if (!selectedValue) return null;
+        const [itemType, itemId] = selectedValue.split('_');
+        const id = parseInt(itemId, 10);
+
+        if (itemType === 'product') {
+            const product = products.find(item => item.id === id);
+            return product ? { type: 'Product', id, name: product.name, price: parseFloat(product.selling_price || 0), key: 'product_id' } : null;
+        }
+
+        if (itemType === 'service') {
+            const service = services.find(item => item.id === id);
+            return service ? { type: 'Service', id, name: service.name, price: parseFloat(service.base_price || 0), key: 'service_id' } : null;
+        }
+
+        return null;
+    }
+
+    function updateLineItem(itemId) {
+        const row = document.getElementById(`row_${itemId}`);
+        const select = row.querySelector('.itemSelect');
+        const quantityInput = row.querySelector('.quantity');
+        const unitPriceInput = row.querySelector('.unitPrice');
+        const item = getCatalogItem(select.value);
+
+        if (item) {
+            document.getElementById(`type_${itemId}`).textContent = item.type;
+            if (select.dataset.lastSelected !== select.value) {
+                unitPriceInput.value = item.price.toFixed(2);
+                select.dataset.lastSelected = select.value;
+            }
+        } else {
+            document.getElementById(`type_${itemId}`).textContent = '-';
+            select.dataset.lastSelected = '';
+        }
+
+        const quantity = parseFloat(quantityInput.value) || 0;
+        const unitPrice = parseFloat(unitPriceInput.value) || 0;
+        document.getElementById(`total_${itemId}`).textContent = formatMoney(quantity * unitPrice);
+        updateTotals();
+    }
+
+    function removeLineItem(itemId) {
+        const row = document.getElementById(`row_${itemId}`);
+        if (row) row.remove();
+        if (document.querySelectorAll('#lineItemsBody tr').length === 0) {
+            document.getElementById('lineItemsTable').style.display = 'none';
+            document.getElementById('noItemsMessage').style.display = 'block';
+        }
+        updateTotals();
+    }
+
+    function updateTotals() {
+        const rows = document.querySelectorAll('#lineItemsBody tr');
+        const gstMode = document.getElementById('gst_mode').value;
+        let enteredTotal = 0;
+        rows.forEach(row => {
+            const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
+            const unitPrice = parseFloat(row.querySelector('.unitPrice').value) || 0;
+            enteredTotal += quantity * unitPrice;
+        });
+
+        let subtotal = enteredTotal;
+        let gst = 0;
+        let total = enteredTotal;
+        if (gstMode === 'inclusive') {
+            subtotal = enteredTotal / 1.10;
+            gst = enteredTotal - subtotal;
+            total = enteredTotal;
+        } else if (gstMode === 'exclusive') {
+            subtotal = enteredTotal;
+            gst = subtotal * 0.10;
+            total = subtotal + gst;
+        }
+        const advanceInput = document.getElementById('advance_payment');
+        let advance = parseFloat(advanceInput.value) || 0;
+        if (advance < 0) advance = 0;
+        if (advance > total) {
+            advance = total;
+            advanceInput.value = total.toFixed(2);
+        }
+
+        document.getElementById('gstLabel').textContent = gstMode === 'inclusive' ? 'Included GST:' : (gstMode === 'none' ? 'GST:' : 'GST (10%):');
+        document.getElementById('subtotal').textContent = formatMoney(subtotal);
+        document.getElementById('gstAmount').textContent = formatMoney(gst);
+        document.getElementById('totalAmount').textContent = formatMoney(total);
+        document.getElementById('balanceAmount').textContent = formatMoney(total - advance);
+    }
+
+    function showAlert(message, type) {
+        const alertBox = document.getElementById('alertBox');
+        alertBox.className = `alert alert-${type}`;
+        alertBox.textContent = message;
+        alertBox.style.display = 'block';
+        setTimeout(() => { alertBox.style.display = 'none'; }, 5000);
+    }
+
+    document.getElementById('invoiceForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const customerId = document.getElementById('customer_id').value;
+        const dueDate = document.getElementById('due_date').value;
+        const reference = document.getElementById('reference').value.trim();
+        const notes = document.getElementById('notes').value;
+        const advancePayment = Math.max(parseFloat(document.getElementById('advance_payment').value) || 0, 0);
+        const rows = document.querySelectorAll('#lineItemsBody tr');
+
+        if (!customerId) {
+            showAlert('Please select a customer', 'error');
+            return;
+        }
+        if (!dueDate) {
+            showAlert('Please select a due date', 'error');
+            return;
+        }
+        if (rows.length === 0) {
+            showAlert('Please add at least one item to the invoice', 'error');
+            return;
+        }
+
+        const items = [];
+        for (const row of rows) {
+            const selectedValue = row.querySelector('.itemSelect').value;
+            const quantity = parseFloat(row.querySelector('.quantity').value);
+            const unitPrice = parseFloat(row.querySelector('.unitPrice').value);
+            const item = getCatalogItem(selectedValue);
+
+            if (!item || !quantity || quantity <= 0 || unitPrice < 0) {
+                showAlert('Please complete all line items with valid values', 'error');
+                return;
+            }
+
+            items.push({
+                [item.key]: item.id,
+                description: item.name,
+                quantity: quantity,
+                unit_price: unitPrice
+            });
+        }
+
+        document.getElementById('submitBtn').disabled = true;
+        document.getElementById('loading').style.display = 'block';
+
+        try {
+            const response = await fetch('/admin/create-invoice', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customer_id: parseInt(customerId, 10),
+                    due_date: dueDate,
+                    reference: reference,
+                    notes: notes,
+                    gst_mode: document.getElementById('gst_mode').value,
+                    advance_payment: advancePayment,
+                    items: items
+                })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                showAlert('Invoice created successfully!', 'success');
+                setTimeout(() => { window.location.href = `/admin/invoice/${result.id}`; }, 1500);
+            } else {
+                showAlert(result.message || 'Error creating invoice', 'error');
+            }
+        } catch (error) {
+            showAlert(`Error: ${error.message}`, 'error');
+        } finally {
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('loading').style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}
