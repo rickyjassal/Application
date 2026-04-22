@@ -113,6 +113,11 @@ source .venv/bin/activate  # Mac/Linux
 pip install -r requirements.txt
 ```
 
+For newer local environments where you want to keep the original modern stack instead of the Bluehost Python 3.6 compatibility stack:
+```bash
+pip install -r requirements-modern.txt
+```
+
 4. Create .env file from template:
 ```bash
 copy .env.example .env

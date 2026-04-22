@@ -1,9 +1,21 @@
-Flask==2.3.3
-Flask-SQLAlchemy==3.0.5
-Flask-Migrate==4.0.5
-python-dotenv==1.0.0
-PyMySQL==1.1.0
-reportlab==4.0.7
-Pillow==10.0.0
-gunicorn==21.2.0
-xhtml2pdf==0.2.17
+# Bluehost shared-hosting compatibility set for Python 3.6.8
+# Use this file on the shared hosting server.
+
+Flask==2.0.3
+Werkzeug==2.0.3
+Jinja2==3.0.3
+itsdangerous==2.0.1
+click==8.0.4
+
+Flask-SQLAlchemy==2.5.1
+SQLAlchemy==1.4.46
+Flask-Migrate==3.1.0
+alembic==1.7.7
+
+python-dotenv==0.19.2
+PyMySQL==1.0.2
+
+reportlab==3.6.12
+Pillow==8.4.0
+
+gunicorn==20.1.0

@@ -1,6 +1,6 @@
 # Bluehost Deployment Guide
 
-This guide explains how to deploy the Business Management System to your Bluehost server at `westernitsolutions.com.au/Application`.
+This guide explains how to deploy the Business Management System to Bluehost shared hosting with Application Manager and Python 3.6.8 compatibility.
 
 ## Table of Contents
 1. [Prerequisites](#prerequisites)
@@ -18,11 +18,15 @@ This guide explains how to deploy the Business Management System to your Bluehos
 - The path: `/public_html/Application/` (we'll create this)
 
 ### Verify Python Support
-Bluehost supports Python via Passenger WSGI. Verify:
+Bluehost shared hosting on this account exposes Python 3.6.8 through Passenger/Application Manager.
+
+Because of that, use the downgraded dependency set in `requirements.txt`.
+
+Verify:
 
 1. Login to cPanel
 2. Look for "Setup Python App" or "Passenger" under Software section
-3. Note the Python version available (we need 3.6+)
+3. Note the Python version available
 
 ## Step-by-Step Deployment
 
@@ -61,17 +65,8 @@ cd ~/public_html/Application
 # Check Python version available
 python3 --version
 
-# Create virtual environment
-python3 -m venv venv
-
-# Activate it
-source venv/bin/activate
-
-# Upgrade pip
-pip install --upgrade pip
-
-# Install dependencies
-pip install -r requirements.txt
+# Install the Bluehost-compatible dependency set
+pip3 install --user -r requirements.txt
 ```
 
 3. **Create .env file**:
@@ -93,10 +88,10 @@ DATABASE_URL=sqlite:///business_management.db
 ### Step 3: Configure Passenger via cPanel
 
 1. **Login to cPanel**
-2. **Find and click "Setup Python App"** (or "Passenger Python Web Application")
+2. **Find and click "Application Manager"**
 3. **Create new Python application**:
-   - **Python version**: 3.9 or higher
-   - **Application path**: `/home/username/public_html/Application`
+   - **Deployment environment**: Production
+   - **Application path**: your application directory
    - **Application startup file**: `passenger_wsgi.py`
    - **Application entry point**: `app`
 
@@ -118,9 +113,6 @@ DATABASE_URL=sqlite:///business_management.db
 ```bash
 ssh username@westernitsolutions.com.au
 cd ~/public_html/Application
-
-# Activate venv
-source venv/bin/activate
 
 # Initialize database
 python3 << 'EOF'
@@ -177,6 +169,12 @@ tail -f ~/public_html/Application/tmp/production.log
 ```
 
 ## Post-Deployment Setup
+
+### Notes
+
+- Use `requirements.txt` on Bluehost shared hosting.
+- `requirements-modern.txt` is kept only as a reference for the newer local stack.
+- The app has been downgraded at the dependency level to support Python 3.6.8.
 
 ### SSL Certificate
 
