@@ -45,7 +45,7 @@ class ProductionConfig(Config):
     """Production configuration for Bluehost"""
     DEBUG = False
     SQLALCHEMY_ECHO = False
-    APP_BASE_URL = 'https://app.application.westernitsolutions.com.au'
+    APP_BASE_URL = os.environ.get('APP_BASE_URL', 'https://app.westernitsolutions.com.au')
     
     # For Bluehost MySQL connection (optional - can use SQLite too)
     # SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://username:password@hostname/dbname'

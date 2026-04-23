@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from sqlalchemy import text
+from sqlalchemy import inspect, text
 from dotenv import load_dotenv
 import os
 from config import config
@@ -13,13 +13,15 @@ migrate = Migrate()
 
 
 def ensure_schema_updates():
-    """Apply lightweight schema updates for existing SQLite databases."""
-    invoice_columns = {
-        row[1] for row in db.session.execute(text("PRAGMA table_info(invoice)")).fetchall()
-    }
-    quote_columns = {
-        row[1] for row in db.session.execute(text("PRAGMA table_info(quote)")).fetchall()
-    }
+    """Apply lightweight schema updates for existing databases."""
+    inspector = inspect(db.engine)
+
+    existing_tables = set(inspector.get_table_names())
+    if 'invoice' not in existing_tables or 'quote' not in existing_tables:
+        return
+
+    invoice_columns = {column['name'] for column in inspector.get_columns('invoice')}
+    quote_columns = {column['name'] for column in inspector.get_columns('quote')}
 
     schema_changed = False
 
