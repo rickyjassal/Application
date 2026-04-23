@@ -32,7 +32,7 @@ class Purchase(BaseModel):
                 sequence = 1001
         else:
             sequence = 1001
-        return f"PUR-{date_str}-{sequence}"
+        return "PUR-{}-{}".format(date_str, sequence)
 
 
 class PurchaseLineItem(BaseModel):

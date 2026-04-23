@@ -15,4 +15,4 @@ class ActivityLog(BaseModel):
     created_on = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     def __repr__(self):
-        return f'<ActivityLog {self.entity_type}:{self.action}>'
+        return '<ActivityLog {}:{}>'.format(self.entity_type, self.action)

@@ -17,4 +17,4 @@ class SecurityQuestion(db.Model):
     user = db.relationship('User', backref='security_questions')
     
     def __repr__(self):
-        return f'<SecurityQuestion {self.question}>'
+        return '<SecurityQuestion {}>'.format(self.question)

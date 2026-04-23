@@ -24,7 +24,7 @@ class InventoryTransaction(BaseModel):
     transaction_date = db.Column(db.DateTime, default=datetime.utcnow)
     
     def __repr__(self):
-        return f'<InventoryTransaction {self.transaction_type} - {self.quantity}>'
+        return '<InventoryTransaction {} - {}>'.format(self.transaction_type, self.quantity)
     
     def to_dict(self):
         """Convert to dictionary"""

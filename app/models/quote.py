@@ -39,7 +39,7 @@ class Quote(BaseModel):
     line_items = db.relationship('QuoteLineItem', backref='quote', lazy=True, cascade='all, delete-orphan')
     
     def __repr__(self):
-        return f'<Quote {self.quote_number}>'
+        return '<Quote {}>'.format(self.quote_number)
     
     def get_subtotal(self):
         """Calculate subtotal"""
@@ -106,7 +106,7 @@ class QuoteLineItem(BaseModel):
     unit_price = db.Column(db.Float, nullable=False)
     
     def __repr__(self):
-        return f'<QuoteLineItem {self.description}>'
+        return '<QuoteLineItem {}>'.format(self.description)
     
     def get_line_total(self):
         """Calculate line total"""

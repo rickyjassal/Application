@@ -37,7 +37,7 @@ class Payment(BaseModel):
     notes = db.Column(db.Text)
     
     def __repr__(self):
-        return f'<Payment {self.amount} for Invoice {self.invoice_id}>'
+        return '<Payment {} for Invoice {}>'.format(self.amount, self.invoice_id)
     
     def to_dict(self):
         """Convert to dictionary"""

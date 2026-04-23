@@ -185,6 +185,6 @@ def create_app(config_name=None):
         from app.services.reminders import run_overdue_reminders
 
         sent = run_overdue_reminders(actor='system')
-        print(f'Sent {len(sent)} overdue reminder(s).')
+        print('Sent {} overdue reminder(s).'.format(len(sent)))
 
     return app

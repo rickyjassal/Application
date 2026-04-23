@@ -28,7 +28,7 @@ class Service(BaseModel):
     quote_items = db.relationship('QuoteLineItem', backref='service', lazy=True, cascade='all, delete-orphan')
     
     def __repr__(self):
-        return f'<Service {self.name}>'
+        return '<Service {}>'.format(self.name)
     
     def get_service_type_display(self):
         """Get display name for service type"""

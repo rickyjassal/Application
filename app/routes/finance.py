@@ -102,7 +102,7 @@ def _filtered_purchases(filters):
     if filters['end_date']:
         query = query.filter(Purchase.purchase_date <= filters['end_date'])
     if filters['search']:
-        search = f"%{filters['search']}%"
+        search = "%{}%".format(filters['search'])
         query = (
             query
             .join(Supplier, Purchase.supplier_id == Supplier.id)
@@ -385,7 +385,7 @@ def _time_bucket_label(dt, group_by):
     if group_by == 'week':
         week_start = dt - timedelta(days=dt.weekday())
         week_end = week_start + timedelta(days=6)
-        return f"{week_start.strftime('%d-%m-%Y')} to {week_end.strftime('%d-%m-%Y')}"
+        return "{} to {}".format(week_start.strftime('%d-%m-%Y'), week_end.strftime('%d-%m-%Y'))
     if group_by == 'year':
         return dt.strftime('%Y')
     return dt.strftime('%b %Y')
@@ -602,12 +602,12 @@ def export_report():
     buffer.close()
 
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    filename = f'finance_{report_type}_{timestamp}.csv'
+    filename = 'finance_{}_{}.csv'.format(report_type, timestamp)
 
     return Response(
         csv_data,
         mimetype='text/csv',
-        headers={'Content-Disposition': f'attachment; filename="{filename}"'}
+        headers={'Content-Disposition': 'attachment; filename="{}"'.format(filename)}
     )
 
 

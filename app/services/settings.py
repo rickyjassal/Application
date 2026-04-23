@@ -65,7 +65,7 @@ def normalize_color(value, default):
     if not value:
         return default
     if not value.startswith('#'):
-        value = f'#{value}'
+        value = '#{}'.format(value)
     if len(value) != 7:
         return default
     return value.lower()

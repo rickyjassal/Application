@@ -21,7 +21,7 @@ class Supplier(BaseModel):
     purchases = db.relationship('Purchase', backref='supplier', lazy=True, cascade='all, delete-orphan')
 
     def __repr__(self):
-        return f'<Supplier {self.name}>'
+        return '<Supplier {}>'.format(self.name)
 
     def get_full_address(self):
         parts = [self.street_address, self.suburb, self.state, self.postcode, self.country]

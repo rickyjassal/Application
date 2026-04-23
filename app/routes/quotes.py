@@ -31,7 +31,7 @@ def generate_quote_number():
     else:
         series_number = 1001
     
-    return f"QT-{date_str}-{series_number}"
+    return "QT-{}-{}".format(date_str, series_number)
 
 @quotes_bp.route('', methods=['GET'])
 @api_login_required

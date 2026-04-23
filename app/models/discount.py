@@ -33,7 +33,7 @@ class DiscountCode(BaseModel):
     is_active = db.Column(db.Boolean, default=True)
     
     def __repr__(self):
-        return f'<DiscountCode {self.code}>'
+        return '<DiscountCode {}>'.format(self.code)
     
     def is_valid(self):
         """Check if discount code is currently valid"""

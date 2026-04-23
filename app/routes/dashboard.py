@@ -52,7 +52,10 @@ def get_stats():
     for quote in accepted_quotes:
         notifications.append({
             'type': 'quote_accepted',
-            'message': f'Quote {quote.quote_number} from {quote.customer.name if quote.customer else "Customer"} has been accepted',
+            'message': 'Quote {} from {} has been accepted'.format(
+                quote.quote_number,
+                quote.customer.name if quote.customer else 'Customer'
+            ),
             'quote_id': quote.id,
             'quote_number': quote.quote_number,
             'customer_name': quote.customer.name if quote.customer else 'Unknown',
@@ -62,7 +65,10 @@ def get_stats():
     for quote in rejected_quotes:
         notifications.append({
             'type': 'quote_rejected',
-            'message': f'Quote {quote.quote_number} from {quote.customer.name if quote.customer else "Customer"} has been rejected',
+            'message': 'Quote {} from {} has been rejected'.format(
+                quote.quote_number,
+                quote.customer.name if quote.customer else 'Customer'
+            ),
             'quote_id': quote.id,
             'quote_number': quote.quote_number,
             'customer_name': quote.customer.name if quote.customer else 'Unknown',

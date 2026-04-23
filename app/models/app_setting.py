@@ -9,4 +9,4 @@ class AppSetting(BaseModel):
     value = db.Column(db.Text)
 
     def __repr__(self):
-        return f'<AppSetting {self.key}>'
+        return '<AppSetting {}>'.format(self.key)

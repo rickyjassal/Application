@@ -27,7 +27,7 @@ class Product(BaseModel):
     inventory_transactions = db.relationship('InventoryTransaction', backref='product', lazy=True, cascade='all, delete-orphan')
     
     def __repr__(self):
-        return f'<Product {self.name}>'
+        return '<Product {}>'.format(self.name)
     
     def get_profit_margin(self):
         """Calculate profit margin percentage"""

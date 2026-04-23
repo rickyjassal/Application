@@ -21,4 +21,4 @@ class NotificationRead(db.Model):
     )
 
     def __repr__(self):
-        return f'<NotificationRead {self.user_id}:{self.notification_key}:{self.is_read}>'
+        return '<NotificationRead {}:{}:{}>'.format(self.user_id, self.notification_key, self.is_read)

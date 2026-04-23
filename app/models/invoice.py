@@ -56,7 +56,7 @@ class Invoice(BaseModel):
     discount_code = db.relationship('DiscountCode')
     
     def __repr__(self):
-        return f'<Invoice {self.invoice_number}>'
+        return '<Invoice {}>'.format(self.invoice_number)
     
     def get_balance_due(self):
         """Calculate balance due"""
@@ -96,7 +96,7 @@ class Invoice(BaseModel):
         else:
             series_number = 1001
         
-        return f"INV-{date_str}-{series_number}"
+        return "INV-{}-{}".format(date_str, series_number)
     
     def to_dict(self):
         """Convert to dictionary"""
@@ -135,7 +135,7 @@ class InvoiceLineItem(BaseModel):
     unit_price = db.Column(db.Float, nullable=False)
     
     def __repr__(self):
-        return f'<InvoiceLineItem {self.description}>'
+        return '<InvoiceLineItem {}>'.format(self.description)
     
     def get_line_total(self):
         """Calculate line total"""
