@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import os
 from config import config
 
-load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'))
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'), override=True)
 
 db = SQLAlchemy()
 migrate = Migrate()
