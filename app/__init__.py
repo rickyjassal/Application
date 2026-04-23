@@ -2,11 +2,32 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from sqlalchemy import inspect, text
-from dotenv import load_dotenv
 import os
 from config import config
 
-load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'), override=True)
+
+def load_env_file(path, override=False):
+    if not os.path.exists(path):
+        return
+
+    with open(path, 'r') as env_file:
+        for raw_line in env_file:
+            line = raw_line.strip()
+            if not line or line.startswith('#') or '=' not in line:
+                continue
+
+            key, value = line.split('=', 1)
+            key = key.strip()
+            value = value.strip()
+
+            if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
+                value = value[1:-1]
+
+            if override or key not in os.environ:
+                os.environ[key] = value
+
+
+load_env_file(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'), override=True)
 
 db = SQLAlchemy()
 migrate = Migrate()
